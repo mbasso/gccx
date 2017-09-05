@@ -1,0 +1,91 @@
+{
+  "name": "gccx",
+  "version": "0.0.1",
+  "description": "Transforms JSX into asm-dom Virtual DOM",
+  "main": "lib/index.js",
+  "jsnext:main": "es/index.js",
+  "files": [
+    "dist",
+    "lib",
+    "es",
+    "bin",
+    "src"
+  ],
+  "scripts": {
+    "clean": "rimraf lib dist es bin src/language.js",
+    "compile:jison": "cd src && jison language.jison language.jisonlex && cd ..",
+    "test": "npm run compile:jison && cross-env BABEL_ENV=commonjs NODE_ENV=test jest",
+    "test:watch": "npm test -- --watchAll",
+    "check:src": "npm run lint && npm run test",
+    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --out-dir lib --ignore cli.js",
+    "build:es": "cross-env BABEL_ENV=es babel src --out-dir es --ignore cli.js",
+    "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack --env.prod src/index.js dist/gccx.js",
+    "build:umd:min": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack --env.prod src/index.js dist/gccx.min.js",
+    "build:bin": "cross-env BABEL_ENV=commonjs babel src --out-dir bin",
+    "build": "npm run compile:jison && npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min && npm run build:bin",
+    "prepublish": "npm run clean && npm run check:src && npm run build && check-es3-syntax lib/ dist/ --kill",
+    "lint": "cd src && cd .."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mbasso/gccx.git"
+  },
+  "keywords": [
+    "jsx",
+    "C++",
+    "vdom",
+    "virtual dom",
+    "html",
+    "webassembly",
+    "cli"
+  ],
+  "author": "Matteo Basso (https://github.com/mbasso)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mbasso/gccx/issues"
+  },
+  "homepage": "https://github.com/mbasso/gccx",
+  "devDependencies": {
+    "babel-cli": "6.26.0",
+    "babel-core": "6.26.0",
+    "babel-eslint": "7.2.3",
+    "babel-loader": "7.1.2",
+    "babel-plugin-transform-es2015-modules-commonjs": "6.26.0",
+    "babel-plugin-transform-es3-member-expression-literals": "6.22.0",
+    "babel-plugin-transform-es3-property-literals": "6.22.0",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
+    "babel-preset-es2015": "6.24.1",
+    "babel-preset-stage-0": "6.24.1",
+    "babel-register": "6.26.0",
+    "check-es3-syntax-cli": "0.2.0",
+    "cross-env": "5.0.5",
+    "eslint": "4.6.1",
+    "eslint-config-airbnb": "15.1.0",
+    "eslint-plugin-import": "2.7.0",
+    "jest": "21.0.1",
+    "jison": "0.4.18",
+    "rimraf": "2.6.1",
+    "webpack": "3.5.5"
+  },
+  "dependencies": {
+    "chalk": "2.1.0",
+    "commander": "2.11.0"
+  },
+  "bin": {
+    "gccx": "./bin/cli.js"
+  },
+  "npmName": "gccx",
+  "npmFileMap": [
+    {
+      "basePath": "/dist/",
+      "files": [
+        "*.js"
+      ]
+    }
+  ],
+  "browserify": {
+    "transform": [
+      "loose-envify"
+    ]
+  }
+}
