@@ -4,57 +4,57 @@ export default [
     input: `
       <span />
     `,
-    output: 'asmdom::h("span")',
+    output: 'asmdom::h(u8"span")',
   },
   {
     message: 'should parse tags with spaces',
     input: '<  span /  >',
-    output: 'asmdom::h("span")',
+    output: 'asmdom::h(u8"span")',
   },
   {
     message: 'should parse self closing tags without attributes',
     input: '<span />',
-    output: 'asmdom::h("span")',
+    output: 'asmdom::h(u8"span")',
   },
   {
     message: 'should support dashed selectors',
     input: '<foo-bar />',
-    output: 'asmdom::h("foo-bar")',
+    output: 'asmdom::h(u8"foo-bar")',
   },
   {
     message: 'should support namespace selectors',
     input: '<foo:bar />',
-    output: 'asmdom::h("foo:bar")',
+    output: 'asmdom::h(u8"foo:bar")',
   },
   {
     message: 'should parse comments',
     input: '<!-- Hello world! -->',
-    output: 'asmdom::h("!", std::string(" Hello world! "))',
+    output: 'asmdom::h(u8"!", std::string(u8" Hello world! "))',
   },
   {
     message: 'should escape quotes in comments',
     input: '<!-- Hello " world! -->',
-    output: 'asmdom::h("!", std::string(" Hello \" world! "))',
+    output: 'asmdom::h(u8"!", std::string(u8" Hello \" world! "))',
   },
   {
     message: 'should parse comments with spaces',
     input: '<!--  -->',
-    output: 'asmdom::h("!", std::string("  "))',
+    output: 'asmdom::h(u8"!", std::string(u8"  "))',
   },
   {
     message: 'should parse empty comments',
     input: '<!---->',
-    output: 'asmdom::h("!", std::string(""))',
+    output: 'asmdom::h(u8"!", std::string(u8""))',
   },
   {
     message: 'should parse an empty tag with open and close',
     input: '<span></span>',
-    output: 'asmdom::h("span")',
+    output: 'asmdom::h(u8"span")',
   },
   {
     message: 'should parse an empty tag with spaces',
     input: '<  span  >   <  /   span  >',
-    output: 'asmdom::h("span")',
+    output: 'asmdom::h(u8"span")',
   },
   {
     message: 'should optimize tags with one child',
@@ -63,7 +63,7 @@ export default [
         <span></span>
       </div>
     `,
-    output: 'asmdom::h("div", asmdom::h("span"))',
+    output: 'asmdom::h(u8"div", asmdom::h(u8"span"))',
   },
   {
     message: 'should optimize tags with text child',
@@ -72,7 +72,7 @@ export default [
         Hello world!
       </div>
     `,
-    output: 'asmdom::h("div", std::string("Hello world!"))',
+    output: 'asmdom::h(u8"div", std::string(u8"Hello world!"))',
   },
   {
     message: 'should escape quotes in text child',
@@ -81,7 +81,7 @@ export default [
         Hello " world!
       </div>
     `,
-    output: 'asmdom::h("div", std::string("Hello \" world!"))',
+    output: 'asmdom::h(u8"div", std::string(u8"Hello \" world!"))',
   },
   {
     message: 'should parse code as child',
@@ -90,7 +90,7 @@ export default [
         { function(foo, bar) }
       </div>
     `,
-    output: 'asmdom::h("div", function(foo, bar))',
+    output: 'asmdom::h(u8"div", function(foo, bar))',
   },
   {
     message: 'should parse comment as child',
@@ -99,7 +99,7 @@ export default [
         { /* comment here */ }
       </div>
     `,
-    output: 'asmdom::h("div")',
+    output: 'asmdom::h(u8"div")',
   },
   {
     message: 'should parse multiple children of different type',
@@ -111,7 +111,7 @@ export default [
         <input />
       </div>
     `,
-    output: 'asmdom::h("div", Children {function(foo, bar), asmdom::h("Hello world!", true), asmdom::h("input")})',
+    output: 'asmdom::h(u8"div", Children {function(foo, bar), asmdom::h(u8"Hello world!", true), asmdom::h(u8"input")})',
   },
   {
     message: 'should throw if open and close tags not match',

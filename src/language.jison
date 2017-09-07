@@ -14,10 +14,10 @@
     function createVNode(data) {
         var vnode;
         if (data.type === 'code') return isComment(vnode = data.code) ? '' : vnode;
-        if (data.type === 'CPXText') return 'asmdom::h("' + escape(data.text, '"') + '", true)';
-        if (data.type === 'CPXComment') return 'asmdom::h("!", std::string("' + data.text + '"))';
+        if (data.type === 'CPXText') return 'asmdom::h(u8"' + escape(data.text, '"') + '", true)';
+        if (data.type === 'CPXComment') return 'asmdom::h(u8"!", std::string(u8"' + data.text + '"))';
         if (data.type === 'CPXElement') {
-            vnode = 'asmdom::h("' + data.sel + '"';
+            vnode = 'asmdom::h(u8"' + data.sel + '"';
 
             if (data.children !== undefined) {
                 var children = data.children.filter(function(child) {
@@ -27,7 +27,7 @@
                 if (children.length === 1) {
                     vnode += ', ';
                     vnode += children[0].type === 'CPXText'
-                            ? 'std::string("' + children[0].text + '")'
+                            ? 'std::string(u8"' + children[0].text + '")'
                             : createVNode(children[0]);
                 } else if (children.length > 1) {
                     vnode += ', Children {' + children.map(createVNode).join(', ') + '}';
