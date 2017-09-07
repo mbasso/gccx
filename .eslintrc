@@ -8,6 +8,7 @@
   },
   "parser": "babel-eslint",
   "rules": {
+    "no-useless-escape": 0,
     "valid-jsdoc": 2,
     "quotes": [2, "single"],
     "strict": [2, "never"]
