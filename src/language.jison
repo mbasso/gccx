@@ -1,6 +1,6 @@
 %{
     function yyerror(line, msg) {
-        throw new Error('Error while parsing cpx code at line ' + line + ': ' + msg);
+        throw new Error('Error while parsing CPX code at line ' + line + ': ' + msg);
     }
 
     function escape(str, char) {
@@ -14,9 +14,9 @@
     function createVNode(data) {
         var vnode;
         if (data.type === 'code') return isComment(vnode = data.code) ? '' : vnode;
-        if (data.type === 'JSXText') return 'asmdom::h("' + escape(data.text, '"') + '", true)';
-        if (data.type === 'JSXComment') return 'asmdom::h("!", std::string("' + data.text + '"))';
-        if (data.type === 'JSXElement') {
+        if (data.type === 'CPXText') return 'asmdom::h("' + escape(data.text, '"') + '", true)';
+        if (data.type === 'CPXComment') return 'asmdom::h("!", std::string("' + data.text + '"))';
+        if (data.type === 'CPXElement') {
             vnode = 'asmdom::h("' + data.sel + '"';
 
             if (data.children !== undefined) {
@@ -26,7 +26,7 @@
 
                 if (children.length === 1) {
                     vnode += ', ';
-                    vnode += children[0].type === 'JSXText'
+                    vnode += children[0].type === 'CPXText'
                             ? 'std::string("' + children[0].text + '")'
                             : createVNode(children[0]);
                 } else if (children.length > 1) {
@@ -52,98 +52,98 @@ file
     ;
 
 e
-    : space JSXElement space
+    : space CPXElement space
         { $$ = createVNode($2); }
     ;
 
-JSXElement
-    : JSXSelfClosingElement
-    | JSXOpeningElement space JSXChildren space JSXClosingElement
+CPXElement
+    : CPXSelfClosingElement
+    | CPXOpeningElement space CPXChildren space CPXClosingElement
         %{
             if ($1 !== $5) {
                 yyerror(yylineno, 'open tag "' + $1 + '" does not match close tag "' + $5 + '"');
             }
 
             $$ = {
-                type: 'JSXElement',
+                type: 'CPXElement',
                 sel: $1,
                 children: $3, 
             }
         }%
     ;
 
-JSXSelfClosingElement
-    : "<" space JSXElementName space "/" space ">"
+CPXSelfClosingElement
+    : "<" space CPXElementName space "/" space ">"
         %{
             $$ = {
-              type: 'JSXElement',
+              type: 'CPXElement',
               sel: $3,
             };
         }%
-    | JSXComment
+    | CPXComment
     ;
 
-JSXOpeningElement
-    : "<" space JSXElementName space ">"
+CPXOpeningElement
+    : "<" space CPXElementName space ">"
         { $$ = $3; }
     ;
 
-JSXClosingElement
-    : "<" space "/" space JSXElementName space ">"
+CPXClosingElement
+    : "<" space "/" space CPXElementName space ">"
         { $$ = $5; }
     ;
 
-JSXElementName
-    : JSXIdentifier
-    | JSXNamespacedName
+CPXElementName
+    : CPXIdentifier
+    | CPXNamespacedName
     ;
 
-JSXIdentifier
+CPXIdentifier
     : LOWERCASE_CHAR
-    | JSXIdentifier LOWERCASE_CHAR
+    | CPXIdentifier LOWERCASE_CHAR
         { $$ = $1 + $2; }
-    | JSXIdentifier "-" JSXIdentifier
+    | CPXIdentifier "-" CPXIdentifier
         { $$ = $1 + $2 + $3; }
     ;
 
-JSXNamespacedName
-    : JSXIdentifier ":" JSXIdentifier
+CPXNamespacedName
+    : CPXIdentifier ":" CPXIdentifier
         { $$ = $1 + $2 + $3; }
     ;
 
-JSXComment
+CPXComment
     : "<" "!" "-" "-" any "-" "-" ">"
         %{
             $$ = {
-              type: 'JSXComment',
+              type: 'CPXComment',
               text: $5,
             };
         }%
     | "<" "!" "-" "-" "-" "-" ">"
         %{
             $$ = {
-              type: 'JSXComment',
+              type: 'CPXComment',
               text: '',
             };
         }%
     ;
 
-JSXChildren
+CPXChildren
     :
         { $$ = []; }
-    | JSXChildren space JSXChild
+    | CPXChildren space CPXChild
         { $$ = $1.concat($3); }
     ;
 
-JSXChild
-    : JSXText
+CPXChild
+    : CPXText
         %{
             $$ = {
-              type: 'JSXText',
+              type: 'CPXText',
               text: $1.trim(),
             };
         }%
-    | JSXElement
+    | CPXElement
     | "{" any "}"
         %{
             $$ = {
@@ -153,14 +153,14 @@ JSXChild
         }%
     ;
 
-JSXText
+CPXText
     :
         { $$ = '' }
-    | JSXTextCharacter JSXText
+    | CPXTextCharacter CPXText
         { $$ = $1 + $2; }
     ;
 
-JSXTextCharacter
+CPXTextCharacter
     : space
     | "/"
     | "-"
@@ -183,7 +183,7 @@ any
     ;
 
 char
-    : JSXTextCharacter
+    : CPXTextCharacter
     | "<"
     | ">"
     | "{"

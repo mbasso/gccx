@@ -123,6 +123,6 @@ export default [
         <input />
       </span>
     `,
-    error: 'Error while parsing cpx code at line 6: open tag "div" does not match close tag "span"',
+    error: 'Error while parsing CPX code at line 6: open tag "div" does not match close tag "span"',
   },
 ];
