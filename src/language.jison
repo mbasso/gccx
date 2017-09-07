@@ -3,32 +3,84 @@
         throw new Error('Error while parsing CPX code at line ' + line + ': ' + msg);
     }
 
-    function escape(str, char) {
-        return str.replace(new RegExp(char, 'g'), '\\' + char)
-    }
-
     function isComment(text) {
         return text.indexOf('/*') === 0 && text.lastIndexOf('*/') === text.length - 2;
     }
 
+    function aggregateStrings(vnodes) {
+        if (vnodes.length === 1) return vnodes[0];
+        return {
+            type: 'string',
+            aggregated: true,
+            value: vnodes.map(function (vnode, index) {
+                var value = vnode.value;
+
+                if (vnode.type === 'CPXText') {
+                    if (index === 0) {
+                        value = value.replace(/^\s+/, '');
+                    } else if (index === vnodes.length - 1) {
+                        value = value.replace(/\s+$/, '');
+                        var previousSpaces = /\s+$/.exec(vnodes[index - 1].value);
+                        if (previousSpaces !== null) {
+                            value = previousSpaces[0] + value;
+                        }
+                    }
+                    return 'u8"' + value + '"';
+                } else if (vnode.type === 'string') {
+                    return 'std::string(' + value.trim() + ')';
+                }
+            }).join(' + '),
+        };
+    }
+
+    function aggregateNodes(vnodes) {
+        var computedVnodes = [];
+        var strings = [];
+        for (var i = 0; i < vnodes.length; i++) {
+            var child = vnodes[i];
+            if (child.type === 'CPXText' || child.type === 'string') {
+                strings.push(child);
+            } else {
+                if (strings.length !== 0) {
+                    computedVnodes.push(aggregateStrings(strings));
+                    strings = [];
+                }
+                computedVnodes.push(child);
+            }
+        }
+        if (strings.length !== 0) {
+            computedVnodes.push(aggregateStrings(strings));
+        }
+        return computedVnodes;
+    }
+
     function createVNode(data) {
         var vnode;
-        if (data.type === 'code') return isComment(vnode = data.code) ? '' : vnode;
-        if (data.type === 'CPXText') return 'asmdom::h(u8"' + escape(data.text, '"') + '", true)';
-        if (data.type === 'CPXComment') return 'asmdom::h(u8"!", std::string(u8"' + data.text + '"))';
+        if (data.type === 'VNode') return data.value;
+        if (data.type === 'string') return 'asmdom::h(' + data.value.trim() + ', true)';
+        if (data.type === 'CPXText') return 'asmdom::h(u8"' + data.value.trim() + '", true)';
+        if (data.type === 'CPXComment') return 'asmdom::h(u8"!", std::string(u8"' + data.value + '"))';
         if (data.type === 'CPXElement') {
             vnode = 'asmdom::h(u8"' + data.sel + '"';
 
             if (data.children !== undefined) {
-                var children = data.children.filter(function(child) {
-                    return child.type !== 'code' || !isComment(child.code.trim());
-                });
+                var children = aggregateNodes(
+                    data.children.filter(function(child) {
+                        return child.type !== 'comment';
+                    })
+                );
 
                 if (children.length === 1) {
                     vnode += ', ';
-                    vnode += children[0].type === 'CPXText'
-                            ? 'std::string(u8"' + children[0].text + '")'
-                            : createVNode(children[0]);
+                    if (children[0].type === 'CPXText') {
+                        vnode += 'std::string(u8"' + children[0].value.trim() + '")';
+                    } else if (children[0].type === 'string') {
+                        vnode += children[0].aggregated !== true
+                                    ? 'std::string(' + children[0].value.trim() + ')'
+                                    : children[0].value.trim();
+                    } else {
+                        vnode += createVNode(children[0]);
+                    }
                 } else if (children.length > 1) {
                     vnode += ', Children {' + children.map(createVNode).join(', ') + '}';
                 }
@@ -74,12 +126,7 @@ CPXElement
 
 CPXSelfClosingElement
     : "<" space CPXElementName space "/" space ">"
-        %{
-            $$ = {
-              type: 'CPXElement',
-              sel: $3,
-            };
-        }%
+        { $$ = { type: 'CPXElement', sel: $3 }; }
     | CPXComment
     ;
 
@@ -99,8 +146,8 @@ CPXElementName
     ;
 
 CPXIdentifier
-    : LOWERCASE_CHAR
-    | CPXIdentifier LOWERCASE_CHAR
+    : CHAR
+    | CPXIdentifier CHAR
         { $$ = $1 + $2; }
     | CPXIdentifier "-" CPXIdentifier
         { $$ = $1 + $2 + $3; }
@@ -113,19 +160,9 @@ CPXNamespacedName
 
 CPXComment
     : "<" "!" "-" "-" any "-" "-" ">"
-        %{
-            $$ = {
-              type: 'CPXComment',
-              text: $5,
-            };
-        }%
+        { $$ = { type: 'CPXComment', value: $5 }; }
     | "<" "!" "-" "-" "-" "-" ">"
-        %{
-            $$ = {
-              type: 'CPXComment',
-              text: '',
-            };
-        }%
+        { $$ = { type: 'CPXComment', value: '' }; }
     ;
 
 CPXChildren
@@ -137,20 +174,20 @@ CPXChildren
 
 CPXChild
     : CPXText
-        %{
-            $$ = {
-              type: 'CPXText',
-              text: $1.trim(),
-            };
-        }%
+        { $$ = { type: 'CPXText', value: $1 }; }
     | CPXElement
+    | CPXExpression
+    ;
+
+CPXExpression
+    : "{" space "/" "*" any "*" "/" space "}"
+        { $$ = { type: 'comment' }; }
     | "{" any "}"
-        %{
-            $$ = {
-              type: 'code',
-              code: $2 !== undefined ? $2.trim() : '',
-            };
-        }%
+        { $$ = { type: 'VNode', value: $2.trim() }; }
+    | "{" ":" "string" any "}"
+        { $$ = { type: 'string', value: $4 }; }
+    | "{" ":" "VNode" any "}"
+        { $$ = { type: 'VNode', value: $4.trim() }; }
     ;
 
 CPXText
@@ -163,15 +200,19 @@ CPXText
 CPXTextCharacter
     : space
     | "/"
+    | "*"
     | "-"
     | ":"
     | "!"
-    | LOWERCASE_CHAR
+    | "VNode"
+    | "string"
+    | CHAR
     | ANY
     ;
 
 space
     :
+        { $$ = ''; }
     | WHITESPACE
     ;
 

@@ -93,6 +93,52 @@ export default [
     output: 'asmdom::h(u8"div", function(foo, bar))',
   },
   {
+    message: 'should parse code as VNode',
+    input: `
+      <div>
+        {:VNode function(foo, bar) }
+      </div>
+    `,
+    output: 'asmdom::h(u8"div", function(foo, bar))',
+  },
+  {
+    message: 'should parse code as string',
+    input: [
+      `
+        <div>
+          {:string function(foo, bar) }
+        </div>
+      `,
+      `
+        <div>
+          Hello {:string function(foo, bar) }
+        </div>
+      `,
+      `
+        <div>
+          {:string function(foo, bar) } foo
+        </div>
+      `,
+      `
+        <div>
+          {:string function(foo, bar) } {:string function(baz) }
+        </div>
+      `,
+      `
+        <div>
+          Hello {:string function(foo, bar) } foo
+        </div>
+      `,
+    ],
+    output: [
+      'asmdom::h(u8"div", std::string(function(foo, bar)))',
+      'asmdom::h(u8"div", u8"Hello " + std::string(function(foo, bar)))',
+      'asmdom::h(u8"div", std::string(function(foo, bar)) + u8" foo")',
+      'asmdom::h(u8"div", std::string(function(foo, bar)) + std::string(function(baz)))',
+      'asmdom::h(u8"div", u8"Hello " + std::string(function(foo, bar)) + u8" foo")',
+    ],
+  },
+  {
     message: 'should parse comment as child',
     input: `
       <div>
