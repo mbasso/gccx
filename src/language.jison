@@ -14,10 +14,10 @@
     function createVNode(data) {
         var vnode;
         if (data.type === 'code') return isComment(vnode = data.code) ? '' : vnode;
-        if (data.type === 'JSXText') return 'h("' + escape(data.text, '"') + '", true)';
-        if (data.type === 'JSXComment') return 'h("!", std::string("' + escape(data.text, '\"') + '"))';
+        if (data.type === 'JSXText') return 'asmdom::h("' + escape(data.text, '"') + '", true)';
+        if (data.type === 'JSXComment') return 'asmdom::h("!", std::string("' + data.text + '"))';
         if (data.type === 'JSXElement') {
-            vnode = 'h("' + data.sel + '"';
+            vnode = 'asmdom::h("' + data.sel + '"';
 
             if (data.children !== undefined) {
                 var children = data.children.filter(function(child) {
@@ -27,7 +27,7 @@
                 if (children.length === 1) {
                     vnode += ', ';
                     vnode += children[0].type === 'JSXText'
-                            ? '"' + children[0].text + '"'
+                            ? 'std::string("' + children[0].text + '")'
                             : createVNode(children[0]);
                 } else if (children.length > 1) {
                     vnode += ', Children {' + children.map(createVNode).join(', ') + '}';
@@ -61,7 +61,7 @@ JSXElement
     | JSXOpeningElement space JSXChildren space JSXClosingElement
         %{
             if ($1 !== $5) {
-                yyerror(yylineno, 'opening tag "' + $1 + '" does not match closing tag "' + $5 + '"');
+                yyerror(yylineno, 'open tag "' + $1 + '" does not match close tag "' + $5 + '"');
             }
 
             $$ = {

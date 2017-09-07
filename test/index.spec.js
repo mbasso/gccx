@@ -6,9 +6,14 @@ describe('parser', () => {
     message,
     input,
     output,
+    error,
   }) => {
     test(message, () => {
-      expect(gccx.parse(input)).toEqual(output);
+      if (error !== undefined) {
+        expect(() => gccx.parse(input)).toThrowError(error);
+      } else {
+        expect(gccx.parse(input)).toEqual(output);
+      }
     });
   });
 });
