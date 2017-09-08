@@ -27,6 +27,19 @@ export default [
     output: 'asmdom::h(u8"foo:bar")',
   },
   {
+    message: 'should support member expressions selectors',
+    input: [
+      '<foo.bar />',
+      '<foo->bar />',
+      '<foo->bar.baz />',
+    ],
+    output: [
+      'asmdom::h(foo.bar)',
+      'asmdom::h(foo->bar)',
+      'asmdom::h(foo->bar.baz)',
+    ],
+  },
+  {
     message: 'should parse comments',
     input: '<!-- Hello world! -->',
     output: 'asmdom::h(u8"!", std::string(u8" Hello world! "))',

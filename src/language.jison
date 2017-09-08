@@ -3,6 +3,13 @@
         throw new Error('Error while parsing CPX code at line ' + line + ': ' + msg);
     }
 
+    function getTagName(sel) {
+        if (sel.indexOf('u8"') === 0) {
+            return sel.substring(0, sel.length - 1).replace('u8"', '');
+        }
+        return sel;
+    }
+
     function isComment(text) {
         return text.indexOf('/*') === 0 && text.lastIndexOf('*/') === text.length - 2;
     }
@@ -61,7 +68,7 @@
         if (data.type === 'CPXText') return 'asmdom::h(u8"' + data.value.trim() + '", true)';
         if (data.type === 'CPXComment') return 'asmdom::h(u8"!", std::string(u8"' + data.value + '"))';
         if (data.type === 'CPXElement') {
-            vnode = 'asmdom::h(u8"' + data.sel + '"';
+            vnode = 'asmdom::h(' + data.sel;
 
             if (data.children !== undefined) {
                 var children = aggregateNodes(
@@ -113,7 +120,7 @@ CPXElement
     | CPXOpeningElement space CPXChildren space CPXClosingElement
         %{
             if ($1 !== $5) {
-                yyerror(yylineno, 'open tag "' + $1 + '" does not match close tag "' + $5 + '"');
+                yyerror(yylineno, 'open tag "' + getTagName($1) + '" does not match close tag "' + getTagName($5) + '"');
             }
 
             $$ = {
@@ -142,13 +149,14 @@ CPXClosingElement
 
 CPXElementName
     : CPXIdentifier
+        { $$ = 'u8"' + $1 + '"'; }
     | CPXNamespacedName
+        { $$ = 'u8"' + $1 + '"'; }
+    | CPXMemberExpression
     ;
 
 CPXIdentifier
-    : CHAR
-    | CPXIdentifier CHAR
-        { $$ = $1 + $2; }
+    : IDENTIFIER
     | CPXIdentifier "-" CPXIdentifier
         { $$ = $1 + $2 + $3; }
     ;
@@ -158,10 +166,21 @@ CPXNamespacedName
         { $$ = $1 + $2 + $3; }
     ;
 
+CPXMemberExpression
+    : CPXIdentifier "->" CPXIdentifier
+        { $$ = $1 + $2 + $3; }
+    | CPXIdentifier "." CPXIdentifier
+        { $$ = $1 + $2 + $3; }
+    | CPXMemberExpression "->" CPXIdentifier
+        { $$ = $1 + $2 + $3; }
+    | CPXMemberExpression "." CPXIdentifier
+        { $$ = $1 + $2 + $3; }
+    ;
+
 CPXComment
-    : "<" "!" "-" "-" any "-" "-" ">"
+    : "<" "!" "-" "-" any "-" "->"
         { $$ = { type: 'CPXComment', value: $5 }; }
-    | "<" "!" "-" "-" "-" "-" ">"
+    | "<" "!" "-" "-" "-" "->"
         { $$ = { type: 'CPXComment', value: '' }; }
     ;
 
@@ -199,14 +218,16 @@ CPXText
 
 CPXTextCharacter
     : space
+    | "->"
     | "/"
     | "*"
     | "-"
     | ":"
     | "!"
+    | "."
     | "VNode"
     | "string"
-    | CHAR
+    | IDENTIFIER
     | ANY
     ;
 
