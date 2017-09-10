@@ -4,6 +4,7 @@ node_modules
 dist
 lib
 es
+bin
 coverage
 _book
 .nyc_output
