@@ -1,3 +1,4 @@
 **/dist/**
 **/node_modules/**
 **/src/language.js
+webpack.config.js
