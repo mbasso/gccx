@@ -3,6 +3,12 @@
         throw new Error('Error while parsing CPX code at line ' + line + ': ' + msg);
     }
 
+    function escape(char, str) {
+        return str.replace(new RegExp('(' + char + ')', 'g'), '\\$1')
+    }
+
+    var escapeQuotes = escape.bind(null, '"');
+
     function getTagName(sel) {
         if (sel.indexOf('u8"') === 0) {
             return sel.substring(0, sel.length - 1).replace('u8"', '');
@@ -92,7 +98,7 @@
         if (data.type === 'VNode') return data.value;
         if (data.type === 'string') return 'asmdom::h(' + data.value.trim() + ', true)';
         if (data.type === 'CPXText') return 'asmdom::h(u8"' + data.value.trim() + '", true)';
-        if (data.type === 'CPXComment') return 'asmdom::h(u8"!", std::string(u8"' + data.value + '"))';
+        if (data.type === 'CPXComment') return 'asmdom::h(u8"!", std::string(u8"' + escapeQuotes(data.value) + '"))';
         if (data.type === 'CPXElement') {
             vnode = 'asmdom::h(' + data.sel;
 
@@ -234,9 +240,26 @@ CPXAttributes
 // CPXSpreadAttribute
 
 CPXAttribute
-    : /* CPXAttributeIdentifier space "=" space CPXAttributeValue
-        { $$ = { type: $1.type, name: $1.name, value: $5 }; }
-    | */ CPXAttributeIdentifier
+    : CPXAttributeIdentifier "=" space CPXAttributeValue
+        %{
+            var value = $4.value;
+            if ($4.type === 'string') {
+                if ($1.type === 'attr') {
+                    value = 'u8"' + $4.value + '"';
+                } else if ($1.type === 'prop') {
+                    value = 'emscripten::val(L"' + $4.value + '")';
+                } else if ($1.type === 'callback') {
+                    yyerror(yylineno, 'cannot set callback "' + $1.name + '" using string notation. Maybe you want to use an {attr}, a [prop] or a (callback)={func}?');
+                }
+            }
+            
+            $$ = {
+                type: $1.type,
+                name: 'u8"' + $1.name + '"',
+                value: value,
+            };
+        }%
+    | CPXAttributeIdentifier
         %{
             var value;
             if ($1.type === 'attr') {
@@ -280,7 +303,10 @@ CPXAttributeName
     | CPXNamespacedName
     ;
 
-// CPXAttributeValue
+CPXAttributeValue
+    : '"' quoteString '"'
+        { $$ = { type: 'string', value: $2 } }
+    ;
 
 CPXChildren
     :
@@ -291,7 +317,7 @@ CPXChildren
 
 CPXChild
     : CPXText
-        { $$ = { type: 'CPXText', value: $1 }; }
+        { $$ = { type: 'CPXText', value: escapeQuotes($1) }; }
     | CPXElement
     | CPXExpression
     ;
@@ -315,22 +341,29 @@ CPXText
     ;
 
 CPXTextCharacter
-    : space
-    | "->"
-    | "/"
-    | "*"
-    | "-"
-    | ":"
-    | "!"
-    | "."
-    | "["
-    | "]"
-    | "("
-    | ")"
-    | "VNode"
-    | "string"
-    | IDENTIFIER
-    | ANY
+    : '"'
+    | safeChar
+    ;
+
+angleCurlyBrackets
+    : "<"
+    | ">"
+    | "{"
+    | "}"
+    ;
+
+quoteString
+    : 
+        { $$ = '' }
+    | quoteString quoteChar
+        { $$ = $1 + $2; }
+    ;
+
+quoteChar
+    : "\\" '"'
+        { $$ = $1 + $2; }
+    | safeChar
+    | angleCurlyBrackets
     ;
 
 space
@@ -346,10 +379,29 @@ any
         { $$ = $1 + $2; }
     ;
 
+safeChar
+    : space
+    | "->"
+    | "/"
+    | "*"
+    | "-"
+    | ":"
+    | "!"
+    | "."
+    | "["
+    | "]"
+    | "("
+    | ")"
+    | "="
+    | "\\"
+    | "VNode"
+    | "string"
+    | IDENTIFIER
+    | ANY
+    ;
+
 char
-    : CPXTextCharacter
-    | "<"
-    | ">"
-    | "{"
-    | "}"
+    : safeChar
+    | angleCurlyBrackets
+    | '"'
     ;

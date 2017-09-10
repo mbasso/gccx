@@ -47,7 +47,7 @@ export default [
   {
     message: 'should escape quotes in comments',
     input: '<!-- Hello " world! -->',
-    output: 'asmdom::h(u8"!", std::string(u8" Hello \" world! "))',
+    output: 'asmdom::h(u8"!", std::string(u8" Hello \\" world! "))',
   },
   {
     message: 'should parse comments with spaces',
@@ -94,7 +94,7 @@ export default [
         Hello " world!
       </div>
     `,
-    output: 'asmdom::h(u8"div", std::string(u8"Hello \" world!"))',
+    output: 'asmdom::h(u8"div", std::string(u8"Hello \\" world!"))',
   },
   {
     message: 'should parse code as child',
@@ -212,5 +212,37 @@ export default [
       'Error while parsing CPX code at line 0: cannot set callback "onfoo" to "true" using shorthand notation. Maybe you want to use an {attr} or a [prop]?',
       'Error while parsing CPX code at line 0: cannot set callback "onFoo" to "true" using shorthand notation. Maybe you want to use an {attr} or a [prop]?',
     ],
+  },
+  {
+    message: 'should parse string attributes',
+    input: [
+      '<span foo="bar" />',
+      '<span {foo}="bar" />',
+    ],
+    output: [
+      'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}}))',
+      'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}}))',
+    ],
+  },
+  {
+    message: 'should parse string props',
+    input: '<span [foo]="bar" />',
+    output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(L"bar")}}))',
+  },
+  {
+    message: 'should throw if a string callback is provided',
+    input: [
+      '<span onFoo="bar" />',
+      '<span (onFoo)="bar" />',
+    ],
+    errors: [
+      'Error while parsing CPX code at line 0: cannot set callback "onfoo" using string notation. Maybe you want to use an {attr}, a [prop] or a (callback)={func}?',
+      'Error while parsing CPX code at line 0: cannot set callback "onFoo" using string notation. Maybe you want to use an {attr}, a [prop] or a (callback)={func}?',
+    ],
+  },
+  {
+    message: 'should escape quotes in string attribute',
+    input: '<span foo="bar{}<>\\"" />',
+    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar{}<>\\""}}))',
   },
 ];
