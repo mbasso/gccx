@@ -184,4 +184,33 @@ export default [
     `,
     error: 'Error while parsing CPX code at line 6: open tag "div" does not match close tag "span"',
   },
+  {
+    message: 'should parse shorthand attributes',
+    input: [
+      '<span foo />',
+      '<span foo></span>',
+      '<span {foo}></span>',
+    ],
+    output: [
+      'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"true"}}))',
+      'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"true"}}))',
+      'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"true"}}))',
+    ],
+  },
+  {
+    message: 'should parse shorthand props',
+    input: '<span [foo] />',
+    output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(true)}}))',
+  },
+  {
+    message: 'should throw if a shorthand callback is provided',
+    input: [
+      '<span onFoo />',
+      '<span (onFoo) />',
+    ],
+    errors: [
+      'Error while parsing CPX code at line 0: cannot set callback "onfoo" to "true" using shorthand notation. Maybe you want to use an {attr} or a [prop]?',
+      'Error while parsing CPX code at line 0: cannot set callback "onFoo" to "true" using shorthand notation. Maybe you want to use an {attr} or a [prop]?',
+    ],
+  },
 ];

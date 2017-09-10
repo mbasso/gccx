@@ -10,6 +10,32 @@
         return sel;
     }
 
+    function filterByType(type, vnode) {
+        return vnode.data.filter(function(attribute) {
+            return attribute.type === type;
+        });
+    }
+
+    var filterAttrs = filterByType.bind(null, 'attr');
+    var filterProps = filterByType.bind(null, 'prop');
+    var filterCallbacks = filterByType.bind(null, 'callback');
+
+    function createMaps(maps) {
+        return maps.map(function(map) {
+            var res = '';
+            if (map.values.length !== 0) {
+                res += map.id + ' {'
+                res += map.values.map(function(attr) {
+                    return '{' + attr.name + ', ' + attr.value + '}';
+                }).join(', ');
+                res += '}';
+            }
+            return res;
+        }).filter(function(map) {
+            return map !== '';
+        }).join(', ');
+    }
+
     function isComment(text) {
         return text.indexOf('/*') === 0 && text.lastIndexOf('*/') === text.length - 2;
     }
@@ -70,6 +96,18 @@
         if (data.type === 'CPXElement') {
             vnode = 'asmdom::h(' + data.sel;
 
+            if (data.data !== undefined && data.data.length !== 0) {
+                vnode += ', Data ('
+
+                vnode += createMaps([
+                    { id: 'Attrs', values: filterAttrs(data) },
+                    { id: 'Props', values: filterProps(data) },
+                    { id: 'Callbacks', values: filterCallbacks(data) },
+                ]);
+
+                vnode += ')'
+            }
+
             if (data.children !== undefined) {
                 var children = aggregateNodes(
                     data.children.filter(function(child) {
@@ -119,27 +157,28 @@ CPXElement
     : CPXSelfClosingElement
     | CPXOpeningElement space CPXChildren space CPXClosingElement
         %{
-            if ($1 !== $5) {
-                yyerror(yylineno, 'open tag "' + getTagName($1) + '" does not match close tag "' + getTagName($5) + '"');
+            if ($1.sel !== $5) {
+                yyerror(yylineno, 'open tag "' + getTagName($1.sel) + '" does not match close tag "' + getTagName($5) + '"');
             }
 
             $$ = {
                 type: 'CPXElement',
-                sel: $1,
+                sel: $1.sel,
+                data: $1.data,
                 children: $3, 
             }
         }%
     ;
 
 CPXSelfClosingElement
-    : "<" space CPXElementName space "/" space ">"
-        { $$ = { type: 'CPXElement', sel: $3 }; }
+    : "<" space CPXElementName space CPXAttributes space "/" space ">"
+        { $$ = { type: 'CPXElement', sel: $3, data: $5 }; }
     | CPXComment
     ;
 
 CPXOpeningElement
-    : "<" space CPXElementName space ">"
-        { $$ = $3; }
+    : "<" space CPXElementName space CPXAttributes space ">"
+        { $$ = { sel: $3, data: $5 }; }
     ;
 
 CPXClosingElement
@@ -184,6 +223,65 @@ CPXComment
         { $$ = { type: 'CPXComment', value: '' }; }
     ;
 
+CPXAttributes
+    :
+        { $$ = []; }
+    // | CPXSpreadAttribute CPXAttributes
+    | CPXAttributes space CPXAttribute
+        { $$ = $1.concat($3); }
+    ;
+
+// CPXSpreadAttribute
+
+CPXAttribute
+    : /* CPXAttributeIdentifier space "=" space CPXAttributeValue
+        { $$ = { type: $1.type, name: $1.name, value: $5 }; }
+    | */ CPXAttributeIdentifier
+        %{
+            var value;
+            if ($1.type === 'attr') {
+                value = 'u8"true"';
+            } else if ($1.type === 'prop') {
+                value = 'emscripten::val(true)';
+            } else if ($1.type === 'callback') {
+                yyerror(yylineno, 'cannot set callback "' + $1.name + '" to "true" using shorthand notation. Maybe you want to use an {attr} or a [prop]?');
+            }
+            $$ = {
+                type: $1.type,
+                name: 'u8"' + $1.name + '"',
+                value: value,
+            };
+        }%
+    ;
+
+CPXAttributeIdentifier
+    : CPXAttributeName
+        %{
+            var name = $1;
+            var type = 'attr';
+            if (name.indexOf('on') === 0) {
+                name = name.toLowerCase();
+                type = 'callback';
+            } else if (name === 'value' || name === 'checked') {
+                type = 'prop';
+            }
+            $$ = { type: type, name: name };
+        }%
+    | "{" space CPXAttributeName space  "}"
+        { $$ = { type: 'attr', name: $3 }; }
+    | "[" space CPXAttributeName space  "]"
+        { $$ = { type: 'prop', name: $3 }; }
+    | "(" space CPXAttributeName space  ")"
+        { $$ = { type: 'callback', name: $3 }; }
+    ;
+
+CPXAttributeName
+    : CPXIdentifier
+    | CPXNamespacedName
+    ;
+
+// CPXAttributeValue
+
 CPXChildren
     :
         { $$ = []; }
@@ -225,6 +323,10 @@ CPXTextCharacter
     | ":"
     | "!"
     | "."
+    | "["
+    | "]"
+    | "("
+    | ")"
     | "VNode"
     | "string"
     | IDENTIFIER
