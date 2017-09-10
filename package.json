@@ -23,7 +23,7 @@
     "build:umd:min": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack --env.prod src/index.js dist/gccx.min.js",
     "build:bin": "cross-env BABEL_ENV=commonjs babel src --out-dir bin",
     "build": "npm run compile:jison && npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min && npm run build:bin",
-    "prepublish": "npm run clean && npm run check:src && npm run build && check-es3-syntax lib/ dist/ --kill",
+    "prepublish": "npm run clean && npm run check:src && npm run build",
     "lint": "cd src && cd .."
   },
   "repository": {
@@ -58,7 +58,6 @@
     "babel-preset-es2015": "6.24.1",
     "babel-preset-stage-0": "6.24.1",
     "babel-register": "6.26.0",
-    "check-es3-syntax-cli": "0.2.0",
     "compression-webpack-plugin": "1.0.0",
     "cross-env": "5.0.5",
     "eslint": "4.6.1",
