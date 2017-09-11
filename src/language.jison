@@ -61,10 +61,6 @@
                         value = value.replace(/^\s+/, '');
                     } else if (index === vnodes.length - 1) {
                         value = value.replace(/\s+$/, '');
-                        var previousSpaces = /\s+$/.exec(vnodes[index - 1].value);
-                        if (previousSpaces !== null) {
-                            value = previousSpaces[0] + value;
-                        }
                     }
                     return 'u8"' + value + '"';
                 } else if (vnode.type === 'string') {
@@ -152,15 +148,31 @@
 file
     : EOF
         { return ""; }
-    | e EOF
-        { return $1; }
+    | code EOF
+        { return $1.trim(); }
     ;
 
-e
-    : space
+code
+    :
         { $$ = ''; }
-    | space CPXElement space
-        { $$ = createVNode($2); }
+    | code safeChar
+        { $$ = $1 + $2; }
+    /* | code "<" code
+        { $$ = $1 + $2 + $3; }
+    | code ">" code
+        { $$ = $1 + $2 + $3; } */
+    | space code space
+        { $$ = $1 + $2 + $3; }
+    | code '"' quoteString '"' code
+        { $$ = $1 + $2 + $3 + $4 + $5;  }
+    | code "{" code "}" code
+        { $$ = $1 + $2 + $3 + $4 + $5; }
+    | code IDENTIFIER space "<" code ">" code
+        { $$ = $1 + $2 + $3 + $4 + $5 + $6 + $7;  }
+    | code IDENTIFIER code
+        { $$ = $1 + $2 + $3; }
+    | code CPXElement code
+        { $$ = $1 + createVNode($2) + $3; }
     ;
 
 CPXElement
@@ -308,32 +320,36 @@ CPXAttributeAssignment
 
 CPXAttributeValue
     : '"' quoteString '"'
-        { $$ = { type: 'string', value: $2 } }
+        { $$ = { type: 'string', value: $2 }; }
+    | "{" code "}"
+        { $$ = { type: 'code', value: $2.trim() }; }
     ;
 
 CPXChildren
     :
         { $$ = []; }
-    | CPXChildren space CPXChild
-        { $$ = $1.concat($3); }
+    | CPXChildren CPXChild
+        { $$ = $1.concat($2); }
     ;
 
 CPXChild
     : CPXText
         { $$ = { type: 'CPXText', value: escapeQuotes($1) }; }
-    | CPXElement
-    | CPXExpression
+    | space CPXElement
+        { $$ = $2; }
+    | space CPXExpression
+        { $$ = $2; }
     ;
 
 CPXExpression
     : "{" space "/" "*" any "*" "/" space "}"
         { $$ = { type: 'comment' }; }
-    | "{" any "}"
-        { $$ = { type: 'VNode', value: $2.trim() }; }
-    | "{" ":" "string" any "}"
-        { $$ = { type: 'string', value: $4 }; }
-    | "{" ":" "VNode" any "}"
-        { $$ = { type: 'VNode', value: $4.trim() }; }
+    | "{" space code space "}"
+        { $$ = { type: 'VNode', value: $3.trim() }; }
+    | "{" ":" "string" space code space "}"
+        { $$ = { type: 'string', value: $5 }; }
+    | "{" ":" "VNode" space code space "}"
+        { $$ = { type: 'VNode', value: $5.trim() }; }
     ;
 
 CPXText
