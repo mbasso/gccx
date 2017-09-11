@@ -19,6 +19,8 @@
     function filterByType(type, vnode) {
         return vnode.data.filter(function(attribute) {
             return attribute.type === type;
+        }).filter((obj, index, arr) => {
+            return arr.map(mapObj => mapObj.name).lastIndexOf(obj.name) === index;
         });
     }
 

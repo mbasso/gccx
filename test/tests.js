@@ -325,7 +325,17 @@ export default [
   // TODO : should parse attributes, props and callbacks
   // TODO : should parse props and callbacks
   // TODO : should parse attributes and callbacks
-  // TODO : should handle duplicate attributes
-  // TODO : should handle duplicate props
+
+  {
+    message: 'should handle duplicate attributes',
+    input: '<span foo foo="bar" bar="baz" />',
+    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}, {u8"bar", u8"baz"}}))',
+  },
+  {
+    message: 'should handle duplicate attributes',
+    input: '<span [foo] [foo]="bar" [bar]="baz" />',
+    output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(L"bar")}, {u8"bar", emscripten::val(L"baz")}}))',
+  },
+
   // TODO : should handle duplicate callbacks
 ];
