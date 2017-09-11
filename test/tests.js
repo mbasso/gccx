@@ -1,13 +1,33 @@
 export default [
   {
+    message: 'should handle an empty input',
+    input: [
+      '',
+      `
+           
+  
+      `,
+    ],
+    output: [
+      '',
+      '',
+    ],
+  },
+  {
+    message: 'should handle an empty input',
+    input: '',
+    output: '',
+  },
+  {
     message: 'should handle non trimmed input',
     input: `
-      <span />
+        <span />   
+         
     `,
     output: 'asmdom::h(u8"span")',
   },
   {
-    message: 'should parse tags with spaces',
+    message: 'should parse self closing tags with spaces',
     input: '<  span /  >',
     output: 'asmdom::h(u8"span")',
   },
@@ -185,6 +205,36 @@ export default [
     error: 'Error while parsing CPX code at line 6: open tag "div" does not match close tag "span"',
   },
   {
+    message: 'should parse dashed attributes',
+    input: [
+      '<span data-foo />',
+      '<span {data-foo} />',
+      '<span [data-foo]></span>',
+      // '<span (data-onclick)={onClick}></span>',
+    ],
+    output: [
+      'asmdom::h(u8"span", Data (Attrs {{u8"data-foo", u8"true"}}))',
+      'asmdom::h(u8"span", Data (Attrs {{u8"data-foo", u8"true"}}))',
+      'asmdom::h(u8"span", Data (Props {{u8"data-foo", emscripten::val(true)}}))',
+      // 'asmdom::h(u8"span", Data (Callbacks {{u8"data-foo", onClick}}))',
+    ],
+  },
+  {
+    message: 'should parse namespaced attributes',
+    input: [
+      '<span data:foo />',
+      '<span {data:foo} />',
+      '<span [data:foo]></span>',
+      // '<span (data:onclick)={onClick}></span>',
+    ],
+    output: [
+      'asmdom::h(u8"span", Data (Attrs {{u8"data:foo", u8"true"}}))',
+      'asmdom::h(u8"span", Data (Attrs {{u8"data:foo", u8"true"}}))',
+      'asmdom::h(u8"span", Data (Props {{u8"data:foo", emscripten::val(true)}}))',
+      // 'asmdom::h(u8"span", Data (Callbacks {{u8"data:foo", onClick}}))',
+    ],
+  },
+  {
     message: 'should parse shorthand attributes',
     input: [
       '<span foo />',
@@ -245,4 +295,37 @@ export default [
     input: '<span foo="bar{}<>\\"" />',
     output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar{}<>\\""}}))',
   },
+  {
+    message: 'should recognize value without square brackets',
+    input: '<span value="bar" />',
+    output: 'asmdom::h(u8"span", Data (Props {{u8"value", emscripten::val(L"bar")}}))',
+  },
+  {
+    message: 'should recognize checked without square brackets',
+    input: '<span checked />',
+    output: 'asmdom::h(u8"span", Data (Props {{u8"checked", emscripten::val(true)}}))',
+  },
+  /* {
+    message: 'should recognize callbacks without round brackets',
+    input: '<span onClick={onClick} />',
+    output: 'asmdom::h(u8"span", Data (Callbacks {{u8"onclick", onClick}}))',
+  },
+  {
+    message: 'should parse attributes with spaces',
+    input: '<span attr1 { attr2 } = "fooAttr" [ prop ] = "fooProp" ( cb ) = { onClick } />',
+    output: 'asmdom::h(u8"span", Data (Attrs {{u8"attr1", u8"true"}, {u8"attr2", u8"fooAttr"}}, Props {{u8"prop", emscripten::val(L"fooProp")}}, Callbacks {{u8"cb", onClick}}))',
+  }, */
+
+  // TODO : should handle code without CPX
+
+  // TODO : should parse multiple attributes
+  // TODO : should parse multiple props
+  // TODO : should parse multiple callbacks
+  // TODO : should parse attributes and props
+  // TODO : should parse attributes, props and callbacks
+  // TODO : should parse props and callbacks
+  // TODO : should parse attributes and callbacks
+  // TODO : should handle duplicate attributes
+  // TODO : should handle duplicate props
+  // TODO : should handle duplicate callbacks
 ];

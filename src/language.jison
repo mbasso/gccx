@@ -155,7 +155,9 @@ file
     ;
 
 e
-    : space CPXElement space
+    : space
+        { $$ = ''; }
+    | space CPXElement space
         { $$ = createVNode($2); }
     ;
 
@@ -240,35 +242,27 @@ CPXAttributes
 // CPXSpreadAttribute
 
 CPXAttribute
-    : CPXAttributeIdentifier "=" space CPXAttributeValue
+    : CPXAttributeIdentifier space CPXAttributeAssignment
         %{
-            var value = $4.value;
-            if ($4.type === 'string') {
+            var value = $3.value;
+            if ($3.type === 'shorthand') {
                 if ($1.type === 'attr') {
-                    value = 'u8"' + $4.value + '"';
+                    value = 'u8"true"';
                 } else if ($1.type === 'prop') {
-                    value = 'emscripten::val(L"' + $4.value + '")';
+                    value = 'emscripten::val(true)';
+                } else if ($1.type === 'callback') {
+                    yyerror(yylineno, 'cannot set callback "' + $1.name + '" to "true" using shorthand notation. Maybe you want to use an {attr} or a [prop]?');
+                }
+            } else if ($3.type === 'string') {
+                if ($1.type === 'attr') {
+                    value = 'u8"' + $3.value + '"';
+                } else if ($1.type === 'prop') {
+                    value = 'emscripten::val(L"' + $3.value + '")';
                 } else if ($1.type === 'callback') {
                     yyerror(yylineno, 'cannot set callback "' + $1.name + '" using string notation. Maybe you want to use an {attr}, a [prop] or a (callback)={func}?');
                 }
             }
             
-            $$ = {
-                type: $1.type,
-                name: 'u8"' + $1.name + '"',
-                value: value,
-            };
-        }%
-    | CPXAttributeIdentifier
-        %{
-            var value;
-            if ($1.type === 'attr') {
-                value = 'u8"true"';
-            } else if ($1.type === 'prop') {
-                value = 'emscripten::val(true)';
-            } else if ($1.type === 'callback') {
-                yyerror(yylineno, 'cannot set callback "' + $1.name + '" to "true" using shorthand notation. Maybe you want to use an {attr} or a [prop]?');
-            }
             $$ = {
                 type: $1.type,
                 name: 'u8"' + $1.name + '"',
@@ -301,6 +295,13 @@ CPXAttributeIdentifier
 CPXAttributeName
     : CPXIdentifier
     | CPXNamespacedName
+    ;
+
+CPXAttributeAssignment
+    : 
+        { $$ = { type: 'shorthand' }; }
+    | "=" space CPXAttributeValue
+        { $$ = $3; }
     ;
 
 CPXAttributeValue
