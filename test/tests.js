@@ -75,6 +75,17 @@ export default [
     output: 'asmdom::h(u8"!", std::string(u8"  "))',
   },
   {
+    message: 'should support all syntax in comments',
+    input: `<!-- VNodestring-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 -->`,
+    output: `asmdom::h(u8"!", std::string(u8" VNodestring-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789 "))`,
+  },
+  {
+    message: 'should replace new line and spaces with one space in comments',
+    input: `<!-- VNodestring-><>/*.-:!={}
+        []()\\"'0123456789 identifier0123456789 -->`,
+    output: `asmdom::h(u8"!", std::string(u8" VNodestring-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789 "))`,
+  },
+  {
     message: 'should parse empty comments',
     input: '<!---->',
     output: 'asmdom::h(u8"!", std::string(u8""))',
@@ -115,6 +126,25 @@ export default [
       </div>
     `,
     output: 'asmdom::h(u8"div", std::string(u8"Hello \\" world!"))',
+  },
+  {
+    message: 'should support all syntax except {, }, < and > in text child',
+    input: `
+      <div>
+        VNodestring-/*.-:!= []()\\"'0123456789 identifier0123456789
+      </div>
+    `,
+    output: `asmdom::h(u8"div", std::string(u8"VNodestring-/*.-:!= []()\\\\"'0123456789 identifier0123456789"))`,
+  },
+  {
+    message: 'should replace new line and spaces with one space in text child',
+    input: `
+      <div>
+        Hello
+        World
+      </div>
+    `,
+    output: `asmdom::h(u8"div", std::string(u8"Hello World"))`,
   },
   {
     message: 'should parse code as child',
@@ -299,6 +329,20 @@ export default [
     message: 'should escape single quotes in string attribute',
     input: "<span foo='bar{}<>\"\\'' />",
     output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar{}<>"\'"}}))',
+  },
+  {
+    message: 'should escape support all syntax in double quote string attribute',
+    input: `<span foo="VNodestring-><>/*.-:!={}
+        []()\\\\"'0123456789 identifier0123456789" />`,
+    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestring-><>/*.-:!={}
+        []()\\\\"'0123456789 identifier0123456789"}}))`,
+  },
+  {
+    message: 'should escape support all syntax in single quote string attribute',
+    input: `<span foo='VNodestring-><>/*.-:!={}
+        []()\\"\\'0123456789 identifier0123456789' />`,
+    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestring-><>/*.-:!={}
+        []()\\"'0123456789 identifier0123456789"}}))`,
   },
   {
     message: 'should recognize value without square brackets',

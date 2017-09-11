@@ -3,6 +3,10 @@
         throw new Error('Error while parsing CPX code at line ' + line + ': ' + msg);
     }
 
+    function normalizeNewLines(str) {
+        return str.replace(/\s*\n\s*/g, ' ');
+    }
+
     function escape(char, str) {
         return str.replace(new RegExp('(' + char + ')', 'g'), '\\$1')
     }
@@ -242,7 +246,7 @@ CPXMemberExpression
 
 CPXComment
     : "<" "!" "-" "-" any "-" "->"
-        { $$ = { type: 'CPXComment', value: $5 }; }
+        { $$ = { type: 'CPXComment', value: normalizeNewLines($5) }; }
     | "<" "!" "-" "-" "-" "->"
         { $$ = { type: 'CPXComment', value: '' }; }
     ;
@@ -338,7 +342,7 @@ CPXChildren
 
 CPXChild
     : CPXText
-        { $$ = { type: 'CPXText', value: escapeQuotes($1) }; }
+        { $$ = { type: 'CPXText', value: normalizeNewLines(escapeQuotes($1)) }; }
     | space CPXElement
         { $$ = $2; }
     | space CPXExpression
