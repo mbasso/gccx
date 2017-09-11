@@ -370,4 +370,57 @@ export default [
     input: '<span (onfoo)={onBaz} (onfoo)={onFoo} onbar={onBar} />',
     output: 'asmdom::h(u8"span", Data (Callbacks {{u8"onfoo", onFoo}, {u8"onbar", onBar}}))',
   },
+  {
+    message: 'should parse CPX code inside C++ code',
+    input: `
+      // my first program in C++
+      #include <iostream>
+
+      int main()
+      {
+        VNode* = <span />;
+      }
+    `,
+    output: `// my first program in C++
+      #include <iostream>
+
+      int main()
+      {
+        VNode* = asmdom::h(u8"span");
+      }`,
+  },
+  {
+    message: 'should parse CPX code inside children',
+    input: `
+      <span>
+        { [&]() -> VNode* {
+          return (
+            <div />
+          );
+        }() }
+      </span>
+    `,
+    output: `asmdom::h(u8\"span\", [&]() -> VNode* {
+          return (
+            asmdom::h(u8\"div\")
+          );
+        }())`,
+  },
+  {
+    message: 'should parse CPX code inside attributes',
+    input: `
+      <span foo={[&]() -> std::string {
+        VNode* vnode = (
+          <div />
+        );
+        return "bar";
+      }} />
+    `,
+    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", [&]() -> std::string {
+        VNode* vnode = (
+          asmdom::h(u8\"div\")
+        );
+        return "bar";
+      }}}))`,
+  },
 ];
