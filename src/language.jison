@@ -326,9 +326,9 @@ CPXAttributeAssignment
 
 CPXAttributeValue
     : '"' doubleQuoteString '"'
-        { $$ = { type: 'string', value: $2 }; }
+        { $$ = { type: 'string', value: normalizeNewLines($2) }; }
     | "'" singleQuoteString "'"
-        { $$ = { type: 'string', value: $2.replace("\\'", "'") }; }
+        { $$ = { type: 'string', value: normalizeNewLines($2.replace("\\'", "'")) }; }
     | "{" code "}"
         { $$ = { type: 'code', value: $2.trim() }; }
     ;

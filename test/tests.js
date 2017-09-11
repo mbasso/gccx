@@ -334,15 +334,13 @@ export default [
     message: 'should escape support all syntax in double quote string attribute',
     input: `<span foo="VNodestring-><>/*.-:!={}
         []()\\\\"'0123456789 identifier0123456789" />`,
-    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestring-><>/*.-:!={}
-        []()\\\\"'0123456789 identifier0123456789"}}))`,
+    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestring-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789"}}))`,
   },
   {
     message: 'should escape support all syntax in single quote string attribute',
     input: `<span foo='VNodestring-><>/*.-:!={}
         []()\\"\\'0123456789 identifier0123456789' />`,
-    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestring-><>/*.-:!={}
-        []()\\"'0123456789 identifier0123456789"}}))`,
+    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestring-><>/*.-:!={} []()\\"'0123456789 identifier0123456789"}}))`,
   },
   {
     message: 'should recognize value without square brackets',
