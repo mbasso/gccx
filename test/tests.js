@@ -318,10 +318,22 @@ export default [
 
   // TODO : should handle code without CPX
 
-  // TODO : should parse multiple attributes
-  // TODO : should parse multiple props
+  {
+    message: 'should parse multiple attributes',
+    input: '<span foo="bar" bar="baz" />',
+    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}, {u8"bar", u8"baz"}}))',
+  },
+  {
+    message: 'should parse multiple props',
+    input: '<span [foo]="bar" [bar]="baz" />',
+    output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(L"bar")}, {u8"bar", emscripten::val(L"baz")}}))',
+  },
   // TODO : should parse multiple callbacks
-  // TODO : should parse attributes and props
+  {
+    message: 'should parse attributes and props',
+    input: '<span foo="bar" [bar]="baz" />',
+    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}}, Props {{u8"bar", emscripten::val(L"baz")}}))',
+  },
   // TODO : should parse attributes, props and callbacks
   // TODO : should parse props and callbacks
   // TODO : should parse attributes and callbacks
@@ -332,7 +344,7 @@ export default [
     output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}, {u8"bar", u8"baz"}}))',
   },
   {
-    message: 'should handle duplicate attributes',
+    message: 'should handle duplicate props',
     input: '<span [foo] [foo]="bar" [bar]="baz" />',
     output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(L"bar")}, {u8"bar", emscripten::val(L"baz")}}))',
   },
