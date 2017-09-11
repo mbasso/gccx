@@ -291,9 +291,14 @@ export default [
     ],
   },
   {
-    message: 'should escape quotes in string attribute',
-    input: '<span foo="bar{}<>\\"" />',
-    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar{}<>\\""}}))',
+    message: 'should escape double quotes in string attribute',
+    input: '<span foo="bar{}<>\'\\"" />',
+    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar{}<>\'\\""}}))',
+  },
+  {
+    message: 'should escape single quotes in string attribute',
+    input: "<span foo='bar{}<>\"\\'' />",
+    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar{}<>"\'"}}))',
   },
   {
     message: 'should recognize value without square brackets',

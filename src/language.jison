@@ -157,13 +157,15 @@ code
         { $$ = ''; }
     | code safeChar
         { $$ = $1 + $2; }
+    | code "'"
+        { $$ = $1 + $2; }
     /* | code "<" code
         { $$ = $1 + $2 + $3; }
     | code ">" code
         { $$ = $1 + $2 + $3; } */
     | space code space
         { $$ = $1 + $2 + $3; }
-    | code '"' quoteString '"' code
+    | code '"' doubleQuoteString '"' code
         { $$ = $1 + $2 + $3 + $4 + $5;  }
     | code "{" code "}" code
         { $$ = $1 + $2 + $3 + $4 + $5; }
@@ -319,8 +321,10 @@ CPXAttributeAssignment
     ;
 
 CPXAttributeValue
-    : '"' quoteString '"'
+    : '"' doubleQuoteString '"'
         { $$ = { type: 'string', value: $2 }; }
+    | "'" singleQuoteString "'"
+        { $$ = { type: 'string', value: $2.replace("\\'", "'") }; }
     | "{" code "}"
         { $$ = { type: 'code', value: $2.trim() }; }
     ;
@@ -361,6 +365,7 @@ CPXText
 
 CPXTextCharacter
     : '"'
+    | "'"
     | safeChar
     ;
 
@@ -371,18 +376,34 @@ angleCurlyBrackets
     | "}"
     ;
 
-quoteString
+singleQuoteString
     : 
         { $$ = '' }
-    | quoteString quoteChar
+    | singleQuoteString singleQuoteChar
         { $$ = $1 + $2; }
     ;
 
-quoteChar
+singleQuoteChar
+    : "\\" "'"
+        { $$ = $1 + $2; }
+    | safeChar
+    | angleCurlyBrackets
+    | '"'
+    ;
+
+doubleQuoteString
+    : 
+        { $$ = '' }
+    | doubleQuoteString doubleQuoteChar
+        { $$ = $1 + $2; }
+    ;
+
+doubleQuoteChar
     : "\\" '"'
         { $$ = $1 + $2; }
     | safeChar
     | angleCurlyBrackets
+    | "'"
     ;
 
 space
@@ -423,4 +444,5 @@ char
     : safeChar
     | angleCurlyBrackets
     | '"'
+    | "'"
     ;
