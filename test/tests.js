@@ -425,7 +425,7 @@ export default [
 
       int main()
       {
-        VNode* = <span />;
+        VNode* vnode = <span />;
       }
     `,
     output: `// my first program in C++
@@ -433,7 +433,7 @@ export default [
 
       int main()
       {
-        VNode* = asmdom::h(u8"span");
+        VNode* vnode = asmdom::h(u8"span");
       }`,
   },
   {
