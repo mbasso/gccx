@@ -2,149 +2,6 @@
     function yyerror(line, msg) {
         throw new Error('Error while parsing CPX code at line ' + line + ': ' + msg);
     }
-
-    function normalizeNewLines(str) {
-        return str.replace(/\s*\n\s*/g, ' ');
-    }
-
-    function escape(char, str) {
-        return str.replace(new RegExp('(' + char + ')', 'g'), '\\$1')
-    }
-
-    var escapeQuotes = escape.bind(null, '"');
-
-    function getTagName(sel) {
-        if (sel.indexOf('u8"') === 0) {
-            return sel.substring(0, sel.length - 1).replace('u8"', '');
-        }
-        return sel;
-    }
-
-    function filterByType(type, vnode) {
-        return vnode.data.filter(function(attribute) {
-            return attribute.type === type;
-        }).filter(function(obj, index, arr) {
-            return arr.map(function(mapObj) {
-                return mapObj.name;
-            }).lastIndexOf(obj.name) === index;
-        });
-    }
-
-    var filterAttrs = filterByType.bind(null, 'attr');
-    var filterProps = filterByType.bind(null, 'prop');
-    var filterCallbacks = filterByType.bind(null, 'callback');
-
-    function createMaps(maps) {
-        return maps.map(function(map) {
-            var res = '';
-            if (map.values.length !== 0) {
-                res += map.id + ' {'
-                res += map.values.map(function(attr) {
-                    return '{' + attr.name + ', ' + attr.value + '}';
-                }).join(', ');
-                res += '}';
-            }
-            return res;
-        }).filter(function(map) {
-            return map !== '';
-        }).join(', ');
-    }
-
-    function isComment(text) {
-        return text.indexOf('/*') === 0 && text.lastIndexOf('*/') === text.length - 2;
-    }
-
-    function aggregateStrings(vnodes) {
-        if (vnodes.length === 1) return vnodes[0];
-        return {
-            type: 'string',
-            aggregated: true,
-            value: vnodes.map(function (vnode, index) {
-                var value = vnode.value;
-
-                if (vnode.type === 'CPXText') {
-                    if (index === 0) {
-                        value = value.replace(/^\s+/, '');
-                    } else if (index === vnodes.length - 1) {
-                        value = value.replace(/\s+$/, '');
-                    }
-                    return 'u8"' + value + '"';
-                } else if (vnode.type === 'string') {
-                    return 'std::string(' + value.trim() + ')';
-                }
-            }).join(' + '),
-        };
-    }
-
-    function aggregateNodes(vnodes) {
-        var computedVnodes = [];
-        var strings = [];
-        for (var i = 0; i < vnodes.length; i++) {
-            var child = vnodes[i];
-            if (child.type === 'CPXText' || child.type === 'string') {
-                strings.push(child);
-            } else {
-                if (strings.length !== 0) {
-                    computedVnodes.push(aggregateStrings(strings));
-                    strings = [];
-                }
-                computedVnodes.push(child);
-            }
-        }
-        if (strings.length !== 0) {
-            computedVnodes.push(aggregateStrings(strings));
-        }
-        return computedVnodes;
-    }
-
-    function createVNode(data) {
-        var vnode;
-        if (data.type === 'VNode') return data.value;
-        if (data.type === 'string') return 'asmdom::h(' + data.value.trim() + ', true)';
-        if (data.type === 'CPXText') return 'asmdom::h(u8"' + data.value.trim() + '", true)';
-        if (data.type === 'CPXComment') return 'asmdom::h(u8"!", std::string(u8"' + escapeQuotes(data.value) + '"))';
-        if (data.type === 'CPXElement') {
-            vnode = 'asmdom::h(' + data.sel;
-
-            if (data.data !== undefined && data.data.length !== 0) {
-                vnode += ', Data ('
-
-                vnode += createMaps([
-                    { id: 'Attrs', values: filterAttrs(data) },
-                    { id: 'Props', values: filterProps(data) },
-                    { id: 'Callbacks', values: filterCallbacks(data) },
-                ]);
-
-                vnode += ')'
-            }
-
-            if (data.children !== undefined) {
-                var children = aggregateNodes(
-                    data.children.filter(function(child) {
-                        return child.type !== 'comment';
-                    })
-                );
-
-                if (children.length === 1) {
-                    vnode += ', ';
-                    if (children[0].type === 'CPXText') {
-                        vnode += 'std::string(u8"' + children[0].value.trim() + '")';
-                    } else if (children[0].type === 'string') {
-                        vnode += children[0].aggregated !== true
-                                    ? 'std::string(' + children[0].value.trim() + ')'
-                                    : children[0].value.trim();
-                    } else {
-                        vnode += createVNode(children[0]);
-                    }
-                } else if (children.length > 1) {
-                    vnode += ', Children {' + children.map(createVNode).join(', ') + '}';
-                }
-            }
-
-            vnode += ')';
-        }
-        return vnode;
-    }
 %}
 
 %start file
@@ -153,7 +10,7 @@
 
 file
     : EOF
-        { return ""; }
+        { return ''; }
     | code EOF
         { return $1.trim(); }
     ;
@@ -198,7 +55,7 @@ code
     // CPX
 
     | code CPXElement
-        { $$ = $1 + createVNode($2); }
+        { $$ = $1 + yy.createVNode($2); }
     ;
 
 CPXElement
@@ -206,7 +63,7 @@ CPXElement
     | CPXOpeningElement space CPXChildren space CPXClosingElement
         %{
             if ($1.sel !== $5) {
-                yyerror(yylineno, 'open tag "' + getTagName($1.sel) + '" does not match close tag "' + getTagName($5) + '"');
+                yyerror(yylineno, 'open tag "' + yy.getTagName($1.sel) + '" does not match close tag "' + yy.getTagName($5) + '"');
             }
 
             $$ = {
@@ -215,7 +72,7 @@ CPXElement
                 data: $1.data,
                 children: $3, 
             }
-        }%
+        %}
     ;
 
 CPXSelfClosingElement
@@ -269,7 +126,7 @@ CPXMemberExpression
 
 CPXComment
     : "<" "!" "-" "-" any "-" "->"
-        { $$ = { type: 'CPXComment', value: normalizeNewLines($5) }; }
+        { $$ = { type: 'CPXComment', value: yy.normalizeNewLines($5) }; }
     | "<" "!" "-" "-" "-" "->"
         { $$ = { type: 'CPXComment', value: '' }; }
     ;
@@ -311,7 +168,7 @@ CPXAttribute
                 name: 'u8"' + $1.name + '"',
                 value: value,
             };
-        }%
+        %}
     ;
 
 CPXAttributeIdentifier
@@ -326,7 +183,7 @@ CPXAttributeIdentifier
                 type = 'prop';
             }
             $$ = { type: type, name: name };
-        }%
+        %}
     | "{" space CPXAttributeName space  "}"
         { $$ = { type: 'attr', name: $3 }; }
     | "[" space CPXAttributeName space  "]"
@@ -349,9 +206,9 @@ CPXAttributeAssignment
 
 CPXAttributeValue
     : '"' doubleQuoteString '"'
-        { $$ = { type: 'string', value: normalizeNewLines($2) }; }
+        { $$ = { type: 'string', value: yy.normalizeNewLines($2) }; }
     | "'" singleQuoteString "'"
-        { $$ = { type: 'string', value: normalizeNewLines($2.replace("\\'", "'")) }; }
+        { $$ = { type: 'string', value: yy.normalizeNewLines($2.replace("\\'", "'")) }; }
     | "{" code "}"
         { $$ = { type: 'code', value: $2.trim() }; }
     ;
@@ -365,7 +222,7 @@ CPXChildren
 
 CPXChild
     : CPXText
-        { $$ = { type: 'CPXText', value: normalizeNewLines(escapeQuotes($1)) }; }
+        { $$ = { type: 'CPXText', value: yy.normalizeNewLines(yy.escapeQuotes($1)) }; }
     | space CPXElement
         { $$ = $2; }
     | space CPXExpression
