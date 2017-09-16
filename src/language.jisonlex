@@ -4,6 +4,7 @@
 
 "VNode"																return 'VNode'
 "string"															return 'string'
+"return"															return 'return'
 
 "->"																	return '->'
 

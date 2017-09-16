@@ -161,26 +161,44 @@ file
 code
     :
         { $$ = ''; }
+
+    // copy
+    
     | code safeChar
         { $$ = $1 + $2; }
     | code "'"
         { $$ = $1 + $2; }
-    /* | code "<" code
+    | code space
+        { $$ = $1 + $2; }
+    
+    // escape
+
+    | code '"' doubleQuoteString '"'
+        { $$ = $1 + $2 + $3 + $4; }
+    | code "{" code "}"
+        { $$ = $1 + $2 + $3 + $4; }
+    | code ">"
+        { $$ = $1 + $2; }
+    | code "<" "<"
         { $$ = $1 + $2 + $3; }
-    | code ">" code
-        { $$ = $1 + $2 + $3; } */
-    | space code space
-        { $$ = $1 + $2 + $3; }
-    | code '"' doubleQuoteString '"' code
-        { $$ = $1 + $2 + $3 + $4 + $5;  }
-    | code "{" code "}" code
+
+    | code IDENTIFIER space "<" "<"
         { $$ = $1 + $2 + $3 + $4 + $5; }
-    | code IDENTIFIER space "<" code ">" code
-        { $$ = $1 + $2 + $3 + $4 + $5 + $6 + $7;  }
-    | code IDENTIFIER code
+    | code IDENTIFIER "<" "<"
+        { $$ = $1 + $2 + $3 + $4; }
+
+    | code IDENTIFIER space "<" code ">"
+        { $$ = $1 + $2 + $3 + $4 + $5 + $6; }
+    | code IDENTIFIER "<" code ">"
+        { $$ = $1 + $2 + $3 + $4 + $5; }
+
+    | code IDENTIFIER space
         { $$ = $1 + $2 + $3; }
-    | code CPXElement code
-        { $$ = $1 + createVNode($2) + $3; }
+
+    // CPX
+
+    | code CPXElement
+        { $$ = $1 + createVNode($2); }
     ;
 
 CPXElement
@@ -226,6 +244,9 @@ CPXElementName
 
 CPXIdentifier
     : IDENTIFIER
+    | "VNode"
+    | "string"
+    | "return"
     | CPXIdentifier "-" CPXIdentifier
         { $$ = $1 + $2 + $3; }
     ;
@@ -442,6 +463,7 @@ safeChar
     | "\\"
     | "VNode"
     | "string"
+    | "return"
     | IDENTIFIER
     | ANY
     ;

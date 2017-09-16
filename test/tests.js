@@ -76,14 +76,14 @@ export default [
   },
   {
     message: 'should support all syntax in comments',
-    input: `<!-- VNodestring-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 -->`,
-    output: `asmdom::h(u8"!", std::string(u8" VNodestring-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789 "))`,
+    input: `<!-- VNodestringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 -->`,
+    output: `asmdom::h(u8"!", std::string(u8" VNodestringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789 "))`,
   },
   {
     message: 'should replace new line and spaces with one space in comments',
-    input: `<!-- VNodestring-><>/*.-:!={}
+    input: `<!-- VNodestringreturn-><>/*.-:!={}
         []()\\"'0123456789 identifier0123456789 -->`,
-    output: `asmdom::h(u8"!", std::string(u8" VNodestring-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789 "))`,
+    output: `asmdom::h(u8"!", std::string(u8" VNodestringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789 "))`,
   },
   {
     message: 'should parse empty comments',
@@ -131,10 +131,10 @@ export default [
     message: 'should support all syntax except {, }, < and > in text child',
     input: `
       <div>
-        VNodestring-/*.-:!= []()\\"'0123456789 identifier0123456789
+        VNodestringreturn-/*.-:!= []()\\"'0123456789 identifier0123456789
       </div>
     `,
-    output: `asmdom::h(u8"div", std::string(u8"VNodestring-/*.-:!= []()\\\\"'0123456789 identifier0123456789"))`,
+    output: `asmdom::h(u8"div", std::string(u8"VNodestringreturn-/*.-:!= []()\\\\"'0123456789 identifier0123456789"))`,
   },
   {
     message: 'should replace new line and spaces with one space in text child',
@@ -332,15 +332,15 @@ export default [
   },
   {
     message: 'should escape support all syntax in double quote string attribute',
-    input: `<span foo="VNodestring-><>/*.-:!={}
+    input: `<span foo="VNodestringreturn-><>/*.-:!={}
         []()\\\\"'0123456789 identifier0123456789" />`,
-    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestring-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789"}}))`,
+    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789"}}))`,
   },
   {
     message: 'should escape support all syntax in single quote string attribute',
-    input: `<span foo='VNodestring-><>/*.-:!={}
+    input: `<span foo='VNodestringreturn-><>/*.-:!={}
         []()\\"\\'0123456789 identifier0123456789' />`,
-    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestring-><>/*.-:!={} []()\\"'0123456789 identifier0123456789"}}))`,
+    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789"}}))`,
   },
   {
     message: 'should recognize value without square brackets',
@@ -469,5 +469,150 @@ export default [
         );
         return "bar";
       }}}))`,
+  },
+  {
+    message: 'should escape C++ code',
+    input: [
+      `
+        #include <iostream>
+        
+        int main()
+        {
+          std::string foo = " VNodestringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 '";
+          VNode* vnode = <span />;
+        }
+      `,
+      `
+        #include <iostream>
+        #include <string>
+        #include <map>
+        
+        int main()
+        {
+          std::map<int, VNode*> foo {
+              {0, <span />},
+              {2, <span />},
+              {4, <span />}
+          };
+          std::vector<std::map<int, VNode*>> bar;
+          VNode* vnode = <span />;
+        }
+      `,
+      `
+        #include <iostream>
+        #include <string>
+        #include <map>
+        
+        int main()
+        {
+          int foo = 0xF0;
+          
+          foo >>= 4;
+          foo <<= 2;
+          foo >> 2;
+          foo << 2;
+          foo<< 2;
+          4 >>= foo;
+          2 <<= foo;
+          2 >> foo;
+          2 << foo;
+          2<< foo;
+          std::cout << foo << 8;
+          std::cout<< foo << 8;
+          VNode* vnode = <span />;
+        }
+      `,
+      `
+        #include <iostream>
+        
+        VNode* main()
+        {
+          return <span />;
+        }
+      `,
+      /* `
+        #include <iostream>
+        
+        int main()
+        {
+          int foo = 2;
+          int bar = 3;
+          if (foo < 4 || 4 < foo) {
+            bar = foo > bar ? 5 : foo++;
+          } else if (foo > 6 || 6 < foo) {
+            bar = foo < bar ? 5 : foo--;
+          } else if (foo<bar || bar>foo || 4<5 || 5>4) {
+            bar = 7;
+          }
+          VNode* vnode = <span />;
+        }
+      `, */
+    ],
+    output: [
+      `#include <iostream>
+        
+        int main()
+        {
+          std::string foo = " VNodestringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 '";
+          VNode* vnode = asmdom::h(u8"span");
+        }`,
+      `#include <iostream>
+        #include <string>
+        #include <map>
+        
+        int main()
+        {
+          std::map<int, VNode*> foo {
+              {0, asmdom::h(u8"span")},
+              {2, asmdom::h(u8"span")},
+              {4, asmdom::h(u8"span")}
+          };
+          std::vector<std::map<int, VNode*>> bar;
+          VNode* vnode = asmdom::h(u8"span");
+        }`,
+      `#include <iostream>
+        #include <string>
+        #include <map>
+        
+        int main()
+        {
+          int foo = 0xF0;
+          
+          foo >>= 4;
+          foo <<= 2;
+          foo >> 2;
+          foo << 2;
+          foo<< 2;
+          4 >>= foo;
+          2 <<= foo;
+          2 >> foo;
+          2 << foo;
+          2<< foo;
+          std::cout << foo << 8;
+          std::cout<< foo << 8;
+          VNode* vnode = asmdom::h(u8"span");
+        }`,
+      `#include <iostream>
+        
+        VNode* main()
+        {
+          return asmdom::h(u8"span");
+        }`,
+      /* `#include <iostream>
+        
+        int main()
+        {
+          int foo = 2;
+          int bar = 3;
+          if (foo < 4) {
+            bar = foo > bar ? 5 : foo++;
+          } else if (foo > 6) {
+            bar = foo < bar ? 5 : foo--;
+          } else if (foo<bar || bar>foo || 4<5 || 5>4) {
+            bar = 7;
+          }
+          VNode* vnode = asmdom::h(u8"span");
+        }`, */
+    ],
   },
 ];
