@@ -220,7 +220,7 @@ export default [
         <input />
       </div>
     `,
-    output: 'asmdom::h(u8"div", Children {function(foo, bar), asmdom::h(u8"Hello world!", true), asmdom::h(u8"input")})',
+    output: 'asmdom::h(u8"div", asmdom::Children {function(foo, bar), asmdom::h(u8"Hello world!", true), asmdom::h(u8"input")})',
   },
   {
     message: 'should throw if open and close tags not match',
@@ -243,10 +243,10 @@ export default [
       '<span (data-onclick)={onClick}></span>',
     ],
     output: [
-      'asmdom::h(u8"span", Data (Attrs {{u8"data-foo", u8"true"}}))',
-      'asmdom::h(u8"span", Data (Attrs {{u8"data-foo", u8"true"}}))',
-      'asmdom::h(u8"span", Data (Props {{u8"data-foo", emscripten::val(true)}}))',
-      'asmdom::h(u8"span", Data (Callbacks {{u8"data-onclick", onClick}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"data-foo", u8"true"}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"data-foo", u8"true"}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"data-foo", emscripten::val(true)}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Callbacks {{u8"data-onclick", onClick}}))',
     ],
   },
   {
@@ -258,10 +258,10 @@ export default [
       '<span (data:onclick)={onClick}></span>',
     ],
     output: [
-      'asmdom::h(u8"span", Data (Attrs {{u8"data:foo", u8"true"}}))',
-      'asmdom::h(u8"span", Data (Attrs {{u8"data:foo", u8"true"}}))',
-      'asmdom::h(u8"span", Data (Props {{u8"data:foo", emscripten::val(true)}}))',
-      'asmdom::h(u8"span", Data (Callbacks {{u8"data:onclick", onClick}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"data:foo", u8"true"}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"data:foo", u8"true"}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"data:foo", emscripten::val(true)}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Callbacks {{u8"data:onclick", onClick}}))',
     ],
   },
   {
@@ -272,15 +272,15 @@ export default [
       '<span {foo}></span>',
     ],
     output: [
-      'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"true"}}))',
-      'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"true"}}))',
-      'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"true"}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"true"}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"true"}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"true"}}))',
     ],
   },
   {
     message: 'should parse shorthand props',
     input: '<span [foo] />',
-    output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(true)}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"foo", emscripten::val(true)}}))',
   },
   {
     message: 'should throw if a shorthand callback is provided',
@@ -300,14 +300,14 @@ export default [
       '<span {foo}="bar" />',
     ],
     output: [
-      'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}}))',
-      'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"bar"}}))',
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"bar"}}))',
     ],
   },
   {
     message: 'should parse string props',
     input: '<span [foo]="bar" />',
-    output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(L"bar")}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"foo", emscripten::val(L"bar")}}))',
   },
   {
     message: 'should throw if a string callback is provided',
@@ -323,99 +323,99 @@ export default [
   {
     message: 'should escape double quotes in string attribute',
     input: '<span foo="bar{}<>\'\\"" />',
-    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar{}<>\'\\""}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"bar{}<>\'\\""}}))',
   },
   {
     message: 'should escape single quotes in string attribute',
     input: "<span foo='bar{}<>\"\\'' />",
-    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar{}<>"\'"}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"bar{}<>"\'"}}))',
   },
   {
     message: 'should escape support all syntax in double quote string attribute',
     input: `<span foo="VNodestringreturn-><>/*.-:!={}
         []()\\\\"'0123456789 identifier0123456789" />`,
-    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789"}}))`,
+    output: `asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"VNodestringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789"}}))`,
   },
   {
     message: 'should escape support all syntax in single quote string attribute',
     input: `<span foo='VNodestringreturn-><>/*.-:!={}
         []()\\"\\'0123456789 identifier0123456789' />`,
-    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"VNodestringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789"}}))`,
+    output: `asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"VNodestringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789"}}))`,
   },
   {
     message: 'should recognize value without square brackets',
     input: '<span value="bar" />',
-    output: 'asmdom::h(u8"span", Data (Props {{u8"value", emscripten::val(L"bar")}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"value", emscripten::val(L"bar")}}))',
   },
   {
     message: 'should recognize checked without square brackets',
     input: '<span checked />',
-    output: 'asmdom::h(u8"span", Data (Props {{u8"checked", emscripten::val(true)}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"checked", emscripten::val(true)}}))',
   },
   {
     message: 'should recognize callbacks without round brackets',
     input: '<span onClick={onClick} />',
-    output: 'asmdom::h(u8"span", Data (Callbacks {{u8"onclick", onClick}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Callbacks {{u8"onclick", onClick}}))',
   },
   {
     message: 'should parse attributes with spaces',
     input: '<span attr1 { attr2 } = "fooAttr" [ prop ] = "fooProp" ( cb ) = { onClick } />',
-    output: 'asmdom::h(u8"span", Data (Attrs {{u8"attr1", u8"true"}, {u8"attr2", u8"fooAttr"}}, Props {{u8"prop", emscripten::val(L"fooProp")}}, Callbacks {{u8"cb", onClick}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"attr1", u8"true"}, {u8"attr2", u8"fooAttr"}}, asmdom::Props {{u8"prop", emscripten::val(L"fooProp")}}, asmdom::Callbacks {{u8"cb", onClick}}))',
   },
   {
     message: 'should parse multiple attributes',
     input: '<span foo="bar" bar="baz" />',
-    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}, {u8"bar", u8"baz"}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"bar"}, {u8"bar", u8"baz"}}))',
   },
   {
     message: 'should parse multiple props',
     input: '<span [foo]="bar" [bar]="baz" />',
-    output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(L"bar")}, {u8"bar", emscripten::val(L"baz")}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"foo", emscripten::val(L"bar")}, {u8"bar", emscripten::val(L"baz")}}))',
   },
   {
     message: 'should parse multiple props',
     input: '<span [foo]="bar" [bar]="baz" />',
-    output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(L"bar")}, {u8"bar", emscripten::val(L"baz")}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"foo", emscripten::val(L"bar")}, {u8"bar", emscripten::val(L"baz")}}))',
   },
   {
     message: 'should parse multiple callbacks',
     input: '<span (onfoo)={onFoo} onbar={onBar} />',
-    output: 'asmdom::h(u8"span", Data (Callbacks {{u8"onfoo", onFoo}, {u8"onbar", onBar}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Callbacks {{u8"onfoo", onFoo}, {u8"onbar", onBar}}))',
   },
   {
     message: 'should parse attributes and props',
     input: '<span foo="bar" [bar]="baz" />',
-    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}}, Props {{u8"bar", emscripten::val(L"baz")}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"bar"}}, asmdom::Props {{u8"bar", emscripten::val(L"baz")}}))',
   },
   {
     message: 'should parse attributes, props and callbacks',
     input: '<span baz="foo" [foo]="bar" (onfoo)={onFoo} />',
-    output: 'asmdom::h(u8"span", Data (Attrs {{u8"baz", u8"foo"}}, Props {{u8"foo", emscripten::val(L"bar")}}, Callbacks {{u8"onfoo", onFoo}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"baz", u8"foo"}}, asmdom::Props {{u8"foo", emscripten::val(L"bar")}}, asmdom::Callbacks {{u8"onfoo", onFoo}}))',
   },
   {
     message: 'should parse props and callbacks',
     input: '<span [foo]="bar" (onfoo)={onFoo} />',
-    output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(L"bar")}}, Callbacks {{u8"onfoo", onFoo}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"foo", emscripten::val(L"bar")}}, asmdom::Callbacks {{u8"onfoo", onFoo}}))',
   },
   {
     message: 'should parse attributes and callbacks',
     input: '<span foo="bar" (onfoo)={onFoo} />',
-    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}}, Callbacks {{u8"onfoo", onFoo}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"bar"}}, asmdom::Callbacks {{u8"onfoo", onFoo}}))',
   },
   {
     message: 'should handle duplicate attributes',
     input: '<span foo foo="bar" bar="baz" />',
-    output: 'asmdom::h(u8"span", Data (Attrs {{u8"foo", u8"bar"}, {u8"bar", u8"baz"}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"bar"}, {u8"bar", u8"baz"}}))',
   },
   {
     message: 'should handle duplicate props',
     input: '<span [foo] [foo]="bar" [bar]="baz" />',
-    output: 'asmdom::h(u8"span", Data (Props {{u8"foo", emscripten::val(L"bar")}, {u8"bar", emscripten::val(L"baz")}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"foo", emscripten::val(L"bar")}, {u8"bar", emscripten::val(L"baz")}}))',
   },
   {
     message: 'should handle duplicate callbacks',
     input: '<span (onfoo)={onBaz} (onfoo)={onFoo} onbar={onBar} />',
-    output: 'asmdom::h(u8"span", Data (Callbacks {{u8"onfoo", onFoo}, {u8"onbar", onBar}}))',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Callbacks {{u8"onfoo", onFoo}, {u8"onbar", onBar}}))',
   },
   {
     message: 'should parse CPX code inside C++ code',
@@ -463,7 +463,7 @@ export default [
         return "bar";
       }} />
     `,
-    output: `asmdom::h(u8"span", Data (Attrs {{u8"foo", [&]() -> std::string {
+    output: `asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", [&]() -> std::string {
         VNode* vnode = (
           asmdom::h(u8\"div\")
         );

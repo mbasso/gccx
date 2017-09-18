@@ -90,11 +90,11 @@ const createVNode = (data) => {
     vnode = `asmdom::h(${data.sel}`;
 
     if (data.data !== undefined && data.data.length !== 0) {
-      vnode += ', Data (';
+      vnode += ', asmdom::Data (';
       vnode += createMaps([
-        { id: 'Attrs', values: filterAttrs(data) },
-        { id: 'Props', values: filterProps(data) },
-        { id: 'Callbacks', values: filterCallbacks(data) },
+        { id: 'asmdom::Attrs', values: filterAttrs(data) },
+        { id: 'asmdom::Props', values: filterProps(data) },
+        { id: 'asmdom::Callbacks', values: filterCallbacks(data) },
       ]);
       vnode += ')';
     }
@@ -116,7 +116,7 @@ const createVNode = (data) => {
           vnode += createVNode(children[0]);
         }
       } else if (children.length > 1) {
-        vnode += `, Children {${children.map(createVNode).join(', ')}}`;
+        vnode += `, asmdom::Children {${children.map(createVNode).join(', ')}}`;
       }
     }
 
