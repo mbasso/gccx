@@ -1,3 +1,57 @@
+import { composeRegex, stringMatch } from './utils';
+
+const attributeRegex = /\s*(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\s*(?::|-)\s*[a-zA-Z_])?)+\s*/;
+const parenthesizedAttributeRegex = composeRegex(/\s*(?:\{|\[|\()\s*/, attributeRegex, /\s*(?:\)|\]|\})\s*/);
+const attributeAssignmentRegex = /\s*=\s*(?:{|"|')\s*/;
+
+const tagCloses = [{
+  regex: /\s*>/,
+}, {
+  regex: /\s*\/\s*>/,
+}];
+
+const tagAttributes = [
+  ...tagCloses,
+  {
+    regex: attributeRegex,
+  },
+  {
+    regex: parenthesizedAttributeRegex,
+  },
+  {
+    regex: attributeRegex,
+    alternatives: [
+      ...tagCloses,
+      {
+        regex: attributeAssignmentRegex,
+      },
+    ],
+  },
+  {
+    regex: parenthesizedAttributeRegex,
+    alternatives: [
+      ...tagCloses,
+      {
+        regex: attributeAssignmentRegex,
+      },
+    ],
+  }];
+
+tagAttributes[2].alternatives = tagAttributes;
+tagAttributes[3].alternatives = tagAttributes;
+
+const tagMatcher = {
+  regex: /</,
+  alternatives: [{
+    regex: /!--/,
+  }, {
+    regex: /\s*(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\s*(?::|->?|\.)\s*[a-zA-Z_])?)+\s*/,
+    alternatives: tagAttributes,
+  }],
+};
+
+const isTagOpen = str => stringMatch(str, tagMatcher);
+
 const normalizeNewLines = str => str.replace(/\s*\n\s*/g, ' ');
 
 const escape = (char, str) => str.replace(new RegExp(`(${char})`, 'g'), '\\$1');
@@ -130,4 +184,5 @@ export default {
   normalizeNewLines,
   escapeQuotes,
   getTagName,
+  isTagOpen,
 };

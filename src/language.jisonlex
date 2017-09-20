@@ -8,7 +8,7 @@
 
 "->"																	return '->'
 
-"<"																		return '<'
+"<"																		return yy.isTagOpen(this.matches.input) ? 'TAG_OPEN' : '<'
 ">"																		return '>'
 "/"																		return '/'
 "*"																		return '*'

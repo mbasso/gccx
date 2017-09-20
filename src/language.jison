@@ -27,7 +27,7 @@ code
         { $$ = $1 + $2; }
     | code space
         { $$ = $1 + $2; }
-    
+
     // escape
 
     | code '"' doubleQuoteString '"'
@@ -36,17 +36,22 @@ code
         { $$ = $1 + $2 + $3 + $4; }
     | code ">"
         { $$ = $1 + $2; }
-    | code "<" "<"
+    | code "<"
+        { $$ = $1 + $2; }
+    | code tagOpen tagOpen
         { $$ = $1 + $2 + $3; }
 
-    | code IDENTIFIER space "<" "<"
-        { $$ = $1 + $2 + $3 + $4 + $5; }
-    | code IDENTIFIER "<" "<"
+    | code IDENTIFIER space "<"
         { $$ = $1 + $2 + $3 + $4; }
-
-    | code IDENTIFIER space "<" code ">"
+    | code IDENTIFIER "<"
+        { $$ = $1 + $2 + $3; }
+    | code IDENTIFIER space tagOpen tagOpen
+        { $$ = $1 + $2 + $3 + $4 + $5; }
+    | code IDENTIFIER tagOpen tagOpen
+        { $$ = $1 + $2 + $3 + $4; }
+    | code IDENTIFIER space tagOpen code ">"
         { $$ = $1 + $2 + $3 + $4 + $5 + $6; }
-    | code IDENTIFIER "<" code ">"
+    | code IDENTIFIER tagOpen code ">"
         { $$ = $1 + $2 + $3 + $4 + $5; }
 
     | code IDENTIFIER space
@@ -76,18 +81,18 @@ CPXElement
     ;
 
 CPXSelfClosingElement
-    : "<" space CPXElementName space CPXAttributes space "/" space ">"
+    : tagOpen space CPXElementName space CPXAttributes space "/" space ">"
         { $$ = { type: 'CPXElement', sel: $3, data: $5 }; }
     | CPXComment
     ;
 
 CPXOpeningElement
-    : "<" space CPXElementName space CPXAttributes space ">"
+    : tagOpen space CPXElementName space CPXAttributes space ">"
         { $$ = { sel: $3, data: $5 }; }
     ;
 
 CPXClosingElement
-    : "<" space "/" space CPXElementName space ">"
+    : tagOpen space "/" space CPXElementName space ">"
         { $$ = $5; }
     ;
 
@@ -125,9 +130,9 @@ CPXMemberExpression
     ;
 
 CPXComment
-    : "<" "!" "-" "-" any "-" "->"
+    : tagOpen "!" "-" "-" any "-" "->"
         { $$ = { type: 'CPXComment', value: yy.normalizeNewLines($5) }; }
-    | "<" "!" "-" "-" "-" "->"
+    | tagOpen "!" "-" "-" "-" "->"
         { $$ = { type: 'CPXComment', value: '' }; }
     ;
 
@@ -254,7 +259,7 @@ CPXTextCharacter
     ;
 
 angleCurlyBrackets
-    : "<"
+    : tagOpen
     | ">"
     | "{"
     | "}"
@@ -294,6 +299,11 @@ space
     :
         { $$ = ''; }
     | WHITESPACE
+    ;
+
+tagOpen
+    : TAG_OPEN
+    | "<"
     ;
 
 any

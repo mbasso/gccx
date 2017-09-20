@@ -530,7 +530,7 @@ export default [
           return <span />;
         }
       `,
-      /* `
+      `
         #include <iostream>
         
         int main()
@@ -546,7 +546,7 @@ export default [
           }
           VNode* vnode = <span />;
         }
-      `, */
+      `,
     ],
     output: [
       `#include <iostream>
@@ -598,21 +598,21 @@ export default [
         {
           return asmdom::h(u8"span");
         }`,
-      /* `#include <iostream>
+      `#include <iostream>
         
         int main()
         {
           int foo = 2;
           int bar = 3;
-          if (foo < 4) {
+          if (foo < 4 || 4 < foo) {
             bar = foo > bar ? 5 : foo++;
-          } else if (foo > 6) {
+          } else if (foo > 6 || 6 < foo) {
             bar = foo < bar ? 5 : foo--;
           } else if (foo<bar || bar>foo || 4<5 || 5>4) {
             bar = 7;
           }
           VNode* vnode = asmdom::h(u8"span");
-        }`, */
+        }`,
     ],
   },
 ];
