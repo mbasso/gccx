@@ -162,7 +162,7 @@ CPXAttribute
                 if ($1.type === 'attr') {
                     value = 'u8"' + $3.value + '"';
                 } else if ($1.type === 'prop') {
-                    value = 'emscripten::val(L"' + $3.value + '")';
+                    value = 'emscripten::val(std::wstring(L"' + $3.value + '"))';
                 } else if ($1.type === 'callback') {
                     yyerror(yylineno, 'cannot set callback "' + $1.name + '" using string notation. Maybe you want to use an {attr}, a [prop] or a (callback)={func}?');
                 }
