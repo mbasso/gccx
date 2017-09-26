@@ -9,6 +9,7 @@ coverage
 _book
 .nyc_output
 .vscode
+temp
 src/language.js
 TODO.md
 package-lock.json

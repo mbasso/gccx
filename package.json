@@ -14,8 +14,9 @@
   "scripts": {
     "clean": "rimraf lib dist es bin src/language.js",
     "compile:jison": "cd src && jison language.jison language.jisonlex && cd ..",
-    "test": "npm run compile:jison && cross-env BABEL_ENV=commonjs NODE_ENV=test jest",
+    "test": "npm run compile:jison && cross-env BABEL_ENV=commonjs NODE_ENV=test jest index.spec.js",
     "test:watch": "npm test -- --watchAll",
+    "test:cpp": "cross-env BABEL_ENV=commonjs NODE_ENV=test jest cpp.spec.js",
     "check:src": "npm run lint && npm run test",
     "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --out-dir lib --ignore cli.js",
     "build:es": "cross-env BABEL_ENV=es babel src --out-dir es --ignore cli.js",
@@ -47,6 +48,7 @@
   },
   "homepage": "https://github.com/mbasso/gccx",
   "devDependencies": {
+    "asm-dom": "0.3.0",
     "babel-cli": "6.26.0",
     "babel-core": "6.26.0",
     "babel-eslint": "7.2.3",
@@ -60,6 +62,7 @@
     "babel-register": "6.26.0",
     "compression-webpack-plugin": "1.0.0",
     "cross-env": "5.0.5",
+    "es6-promisify": "5.0.0",
     "eslint": "4.6.1",
     "eslint-config-airbnb": "15.1.0",
     "eslint-plugin-import": "2.7.0",
