@@ -20,8 +20,10 @@
     "expect"     : false,
     "before"     : false,
     "beforeEach" : false,
+    "beforeAll"  : false,
     "after"      : false,
     "afterEach"  : false,
+    "afterAll"   : false,
     "jest"       : false
   }
 }

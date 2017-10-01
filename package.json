@@ -14,12 +14,12 @@
   "scripts": {
     "clean": "rimraf lib dist es bin src/language.js",
     "compile:jison": "cd src && jison language.jison language.jisonlex && cd ..",
-    "test": "npm run compile:jison && cross-env BABEL_ENV=commonjs NODE_ENV=test jest index.spec.js",
+    "test": "npm run compile:jison && npm run build:bin && cross-env BABEL_ENV=commonjs NODE_ENV=test jest index.spec.js cli.spec.js utils.spec.js",
     "test:watch": "npm test -- --watchAll",
     "test:cpp": "cross-env BABEL_ENV=commonjs NODE_ENV=test jest cpp.spec.js",
     "check:src": "npm run lint && npm run test",
-    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --out-dir lib --ignore cli.js",
-    "build:es": "cross-env BABEL_ENV=es babel src --out-dir es --ignore cli.js",
+    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --out-dir lib --ignore cli",
+    "build:es": "cross-env BABEL_ENV=es babel src --out-dir es --ignore cli",
     "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack --env.prod src/index.js dist/gccx.js",
     "build:umd:min": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack --env.prod src/index.js dist/gccx.min.js",
     "build:bin": "cross-env BABEL_ENV=commonjs babel src --out-dir bin",
@@ -66,6 +66,7 @@
     "eslint": "4.6.1",
     "eslint-config-airbnb": "15.1.0",
     "eslint-plugin-import": "2.7.0",
+    "get-stream": "3.0.0",
     "jest": "21.0.1",
     "jison": "0.4.18",
     "rimraf": "2.6.1",
@@ -76,7 +77,7 @@
     "commander": "2.11.0"
   },
   "bin": {
-    "gccx": "./bin/cli.js"
+    "gccx": "./bin/cli/index.js"
   },
   "npmName": "gccx",
   "npmFileMap": [
