@@ -9,7 +9,7 @@ program
   .version(version)
   .arguments('<file_or_directory>')
   .option('-o, --output <directory>', 'Destination folder for compiled files')
-  .option('-x, --extensions <extensions>', 'List of extensions to hook into')
+  .option('-x, --extensions <extensions>', 'List of extensions to hook into', val => val.split(',').map(String))
   .option('-i, --ignore <regex>', 'Ignore all files and directories that match this regex')
   .option('--no-gccxrc', 'Whether or not to look up .gccxrc')
   .option('--no-copy-files', 'When compiling a directory avoid copy over non-compilable files')

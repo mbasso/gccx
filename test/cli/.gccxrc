@@ -1,0 +1,6 @@
+{
+  "extensions": [
+    ".cpp"
+  ],
+  "ignore": "foo"
+}
