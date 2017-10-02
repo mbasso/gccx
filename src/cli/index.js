@@ -9,10 +9,11 @@ program
   .version(version)
   .arguments('<file_or_directory>')
   .option('-o, --output <directory>', 'Destination folder for compiled files')
-  .option('-e, --extensions <extensions>', 'List of extensions to hook into')
-  .option('-E, --exclude <directories>', 'List of directories and files to avoid at compile time')
-  .option('-ng, --no-gccxrc', 'Whether or not to look up .gccxrc')
-  .option('-nc, --no-copy-files', 'When compiling a directory avoid copy over non-compilable files')
+  .option('-x, --extensions <extensions>', 'List of extensions to hook into')
+  .option('-i, --ignore <regex>', 'Ignore all files and directories that match this regex')
+  .option('--no-gccxrc', 'Whether or not to look up .gccxrc')
+  .option('--no-copy-files', 'When compiling a directory avoid copy over non-compilable files')
+  .option('-w, --watch', 'Compile files every time that you change them')
   .action((fileOrDirectory) => {
     input = fileOrDirectory;
   })
