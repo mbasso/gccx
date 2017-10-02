@@ -14,7 +14,7 @@
   "scripts": {
     "clean": "rimraf lib dist es bin src/language.js",
     "compile:jison": "cd src && jison language.jison language.jisonlex && cd ..",
-    "test": "npm run compile:jison && npm run build:bin && cross-env BABEL_ENV=commonjs NODE_ENV=test jest index.spec.js cli.spec.js utils.spec.js",
+    "test": "npm run compile:jison && npm run build:bin && cross-env BABEL_ENV=commonjs NODE_ENV=test jest \"(\\\\|\\/)(?!cpp)\\w+.spec.js\"",
     "test:watch": "npm test -- --watchAll",
     "test:cpp": "cross-env BABEL_ENV=commonjs NODE_ENV=test jest cpp.spec.js",
     "check:src": "npm run lint && npm run test",
