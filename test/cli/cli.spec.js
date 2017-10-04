@@ -26,4 +26,13 @@ describe('cli', () => {
       });
     });
   });
+
+  ['-h', '--help'].forEach((command) => {
+    test(`shold output help with ${command}`, (done) => {
+      execCli([command], (err, stdout) => {
+        expect(/^\s*Usage:/.test(stdout)).toBeTruthy();
+        done();
+      });
+    });
+  });
 });
