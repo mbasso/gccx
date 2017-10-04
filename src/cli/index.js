@@ -1,7 +1,9 @@
-#!/usr/bin/env node
+#!/usr/bin/env
 import program from 'commander';
-import { version } from '../../package.json';
+import compile from './compiler';
+import getConfig from './config';
 import { exit } from './utils';
+import { version } from '../../package.json';
 
 let input;
 
@@ -25,3 +27,10 @@ if (input === undefined) {
     code: 1,
   });
 }
+
+const config = getConfig(input, program);
+
+// eslint-disable-next-line
+console.log('\n');
+
+compile(config.input, config.output, config);
