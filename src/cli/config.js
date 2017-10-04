@@ -48,7 +48,10 @@ export default function buildConfig(input, program = {}) {
     }
   });
 
-  if (fs.lstatSync(input).isDirectory() && /\.\w+/.test(config.output)) {
+  const inputIsDirectory = fs.lstatSync(input).isDirectory();
+  if (inputIsDirectory && !config.output) {
+    throw new Error('invalid config: cannot use input directory without output option');
+  } else if (inputIsDirectory && /\.\w+/.test(config.output)) {
     throw new Error('invalid config: output is a file and input is a directory');
   }
 

@@ -33,18 +33,24 @@ describe('config', () => {
     ).toThrowError('invalid config: output is a file and input is a directory');
   });
 
+  test('should throw if output is undefined and input is a directory', () => {
+    expect(
+      () => buildConfig('src'),
+    ).toThrowError('invalid config: cannot use input directory without output option');
+  });
+
   test('should throw if extensions are not well formatted', () => {
     expect(
-      () => buildConfig('src', {
+      () => buildConfig('package.json', {
         extensions: ['cpp'],
       }),
     ).toThrowError('extension "cpp" does not match the extension format');
   });
 
   test('should get default config if no command line options and no gccxrc are provided', () => {
-    const config = buildConfig('src');
+    const config = buildConfig('package.json');
     expect(config).toEqual({
-      input: 'src',
+      input: 'package.json',
       output: undefined,
       extensions: ['.cpx', '.CPX', '.C', '.cc', '.cpp', '.CPP', '.c++', '.cp', '.cxx'],
       ignore: undefined,
@@ -55,7 +61,7 @@ describe('config', () => {
   });
 
   test('should get config from command line', () => {
-    const config = buildConfig('src', {
+    const config = buildConfig('package.json', {
       gccxrc: false,
     });
     expect(config.gccxrc).toEqual(false);
@@ -63,14 +69,14 @@ describe('config', () => {
 
   test('should get config from gccxrc', () => {
     process.cwd = () => __dirname;
-    const config = buildConfig('src');
+    const config = buildConfig('package.json');
     expect(config.extensions).toEqual(['.cpp']);
     expect(config.ignore).toEqual('foo');
   });
 
   test('should overwrite gccxrc config from command line', () => {
     process.cwd = () => __dirname;
-    const config = buildConfig('src', {
+    const config = buildConfig('package.json', {
       ignore: 'bar',
     });
     expect(config.extensions).toEqual(['.cpp']);
