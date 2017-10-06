@@ -47,6 +47,14 @@ describe('config', () => {
     ).toThrowError('extension "cpp" does not match the extension format');
   });
 
+  test('should support extensions format', () => {
+    expect(
+      () => buildConfig('package.json', {
+        extensions: ['.cpp', '.spec.js'],
+      }),
+    ).not.toThrow();
+  });
+
   test('should get default config if no command line options and no gccxrc are provided', () => {
     const config = buildConfig('package.json');
     expect(config).toEqual({
