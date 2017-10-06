@@ -25,7 +25,7 @@
     "build:bin": "cross-env BABEL_ENV=commonjs babel src --out-dir bin",
     "build": "npm run compile:jison && npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min && npm run build:bin",
     "prepublish": "npm run clean && npm run check:src && npm run build",
-    "lint": "cd src && cd .."
+    "lint": "eslint src test build"
   },
   "repository": {
     "type": "git",
