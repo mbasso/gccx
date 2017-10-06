@@ -1,13 +1,12 @@
-const fs = require('fs');
-const path = require('path');
-const process = require('process');
-const childProcess = require('child_process');
-const promisify = require('es6-promisify');
+import fs from 'fs';
+import path from 'path';
+import childProcess from 'child_process';
+import promisify from 'es6-promisify';
 
 const exec = promisify(childProcess.exec);
 
 const exit = (...messages) => {
-  // esline-disable-next-line
+  // eslint-disable-next-line
   console.error(...messages);
   process.exit(1);
 };
