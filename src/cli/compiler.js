@@ -21,6 +21,13 @@ const compile = (pathIn, pathOut, opts) => {
         const pathInSub = path.join(pathIn, subPath);
         const pathOutSub = path.join(pathOut, subPath);
 
+        if (fs.lstatSync(pathInSub).isDirectory()) {
+          if (!fs.existsSync(pathOutSub)) {
+            fs.mkdirSync(pathOutSub);
+          }
+          return compile(pathInSub, pathOutSub, opts);
+        }
+
         let compilable = true;
         if (compilable && opts.extensions) {
           compilable = opts.extensions.reduce(

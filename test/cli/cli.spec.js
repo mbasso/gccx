@@ -332,4 +332,86 @@ describe('cli', () => {
       done();
     });
   });
+
+  test('should compile folder tree', (done) => {
+    const inputDir = path.join('files', 'tree');
+    const outputDir = path.join(__dirname, '../../temp/compiledTree');
+    fs.mkdirSync(outputDir);
+
+    execCli([inputDir, '-o', outputDir], (err, stdout) => {
+      expect(err).toEqual(0);
+      expect(fs.readdirSync(outputDir)).toEqual(['div.cpp', 'example.md', 'firstLevel']);
+      expect(
+        fs.readFileSync(path.join(outputDir, 'div.cpp'), 'utf8'),
+      ).toEqual('asmdom::h(u8"div")');
+      expect(
+        fs.readFileSync(path.join(outputDir, 'example.md'), 'utf8'),
+      ).toEqual('example');
+
+      const firstLevelDir = path.join(outputDir, 'firstLevel');
+      expect(fs.readdirSync(firstLevelDir)).toEqual(['secondLevel', 'secondLevel2', 'span.cpp']);
+      expect(
+        fs.readFileSync(path.join(firstLevelDir, 'span.cpp'), 'utf8'),
+      ).toEqual('asmdom::h(u8"span")');
+
+      const secondLevelDir = path.join(firstLevelDir, 'secondLevel');
+      expect(fs.readdirSync(secondLevelDir)).toEqual(['foo.md']);
+      expect(
+        fs.readFileSync(path.join(secondLevelDir, 'foo.md'), 'utf8'),
+      ).toEqual('foo');
+
+      const secondLevel2Dir = path.join(firstLevelDir, 'secondLevel2');
+      expect(fs.readdirSync(secondLevel2Dir)).toEqual(['img.cpp']);
+      expect(
+        fs.readFileSync(path.join(secondLevel2Dir, 'img.cpp'), 'utf8'),
+      ).toEqual('asmdom::h(u8"img")');
+
+      expect(stdout.trim()).toEqual(
+        `${path.join(inputDir, 'div.cpp')} -> ${path.join(outputDir, 'div.cpp')}\n` +
+        `${path.join(inputDir, 'firstLevel', 'secondLevel2', 'img.cpp')} -> ${path.join(secondLevel2Dir, 'img.cpp')}\n` +
+        `${path.join(inputDir, 'firstLevel', 'span.cpp')} -> ${path.join(firstLevelDir, 'span.cpp')}`,
+      );
+      done();
+    });
+  });
+
+  test('should compile ignore folder', (done) => {
+    const inputDir = path.join('files', 'tree');
+    const outputDir = path.join(__dirname, '../../temp/ignoreFolder');
+    fs.mkdirSync(outputDir);
+
+    execCli([inputDir, '-o', outputDir, '-i', 'firstLevel'], (err, stdout) => {
+      expect(err).toEqual(0);
+      expect(fs.readdirSync(outputDir)).toEqual(['div.cpp', 'example.md', 'firstLevel']);
+      expect(
+        fs.readFileSync(path.join(outputDir, 'div.cpp'), 'utf8'),
+      ).toEqual('asmdom::h(u8"div")');
+      expect(
+        fs.readFileSync(path.join(outputDir, 'example.md'), 'utf8'),
+      ).toEqual('example');
+
+      const firstLevelDir = path.join(outputDir, 'firstLevel');
+      expect(fs.readdirSync(firstLevelDir)).toEqual(['secondLevel', 'secondLevel2', 'span.cpp']);
+      expect(
+        fs.readFileSync(path.join(firstLevelDir, 'span.cpp'), 'utf8'),
+      ).toEqual('<span />');
+
+      const secondLevelDir = path.join(firstLevelDir, 'secondLevel');
+      expect(fs.readdirSync(secondLevelDir)).toEqual(['foo.md']);
+      expect(
+        fs.readFileSync(path.join(secondLevelDir, 'foo.md'), 'utf8'),
+      ).toEqual('foo');
+
+      const secondLevel2Dir = path.join(firstLevelDir, 'secondLevel2');
+      expect(fs.readdirSync(secondLevel2Dir)).toEqual(['img.cpp']);
+      expect(
+        fs.readFileSync(path.join(secondLevel2Dir, 'img.cpp'), 'utf8'),
+      ).toEqual('<img />');
+
+      expect(stdout.trim()).toEqual((
+        `${path.join(inputDir, 'div.cpp')} -> ${path.join(outputDir, 'div.cpp')}`
+      ).trim());
+      done();
+    });
+  });
 });
