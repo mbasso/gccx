@@ -15,8 +15,6 @@ const exit = (...messages) => {
 jest.setTimeout(100000);
 
 describe('cpp output', () => {
-  // TODO : afterAll
-
   test('should compile files', (done) => {
     fs.readdir(__dirname, (err, files) => {
       if (err) {

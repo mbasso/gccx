@@ -1,5 +1,7 @@
+import fs from 'fs';
+import path from 'path';
 import chalk from 'chalk';
-import { exit } from '../../src/cli/utils';
+import { exit, copy } from '../../src/cli/utils';
 
 describe('utils', () => {
   describe('exit', () => {
@@ -7,7 +9,7 @@ describe('utils', () => {
 
     beforeAll(() => {
       originalExit = process.exit;
-      process.exit = () => {};
+      process.exit = () => { };
     });
 
     afterAll(() => {
@@ -84,6 +86,19 @@ describe('utils', () => {
       logSpy.mockRestore();
       exitSpy.mockReset();
       exitSpy.mockRestore();
+    });
+  });
+
+  describe('copy', () => {
+    test('should copy file', (done) => {
+      const src = path.join(__dirname, '../../package.json');
+      const dest = path.join(__dirname, '../../temp/package.json');
+      copy(src, dest).then(() => {
+        expect(fs.readFileSync(src, 'utf8')).toEqual(fs.readFileSync(dest, 'utf8'));
+        done();
+      }).catch((err) => {
+        throw new Error(err);
+      });
     });
   });
 });

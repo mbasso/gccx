@@ -1,3 +1,4 @@
+import fs from 'fs';
 import chalk from 'chalk';
 
 const print = ({
@@ -30,3 +31,10 @@ export const exit = ({ code = 0, message = '' } = {}) => {
   }
   process.exit(code);
 };
+
+export const copy = (src, dest) => new Promise((resolve, reject) => {
+  const readStream = fs.createReadStream(src);
+  readStream.once('error', reject);
+  readStream.once('end', resolve);
+  readStream.pipe(fs.createWriteStream(dest));
+});
