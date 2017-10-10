@@ -19,7 +19,6 @@ const success = message => print({
   message,
 });
 
-//eslint-disable-next-line
 export const exit = ({ code = 0, message = '' } = {}) => {
   if (message) {
     const text = `\n\t${message}\n`;
