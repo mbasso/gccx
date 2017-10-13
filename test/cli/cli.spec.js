@@ -414,4 +414,243 @@ describe('cli', () => {
       done();
     });
   });
+
+  ['-w', '--watch'].forEach((command) => {
+    test(`should watch with ${command}`, (done) => {
+      let killed = false;
+      const inputDir = path.join(tempDir, 'watch');
+      if (!fs.existsSync(inputDir)) {
+        fs.mkdirSync(inputDir);
+      }
+      const input = path.join(inputDir, 'span.cpp');
+      fs.writeFileSync(input, '<span />');
+
+      const child = execCli([input, command], () => {
+        expect(
+          fs.readFileSync(input, 'utf8'),
+        ).toEqual('<span      />');
+        expect(killed).toEqual(true);
+        done();
+      });
+
+      let buffer = '';
+      let passedFirst = false;
+      child.stdout.on('data', (str) => {
+        buffer += str;
+        if (/asmdom::h\(u8"span"\)/.test(buffer)) {
+          if (!passedFirst) {
+            fs.writeFileSync(input, '<span      />');
+            buffer = '';
+            passedFirst = true;
+          } else if (!killed) {
+            child.kill();
+            killed = true;
+          }
+        }
+      });
+    });
+  });
+
+  test('should recompile files when they changed', (done) => {
+    let killed = false;
+    const inputDir = path.join(tempDir, 'watchFile');
+    fs.mkdirSync(inputDir);
+    const input = path.join(inputDir, 'span.cpp');
+    fs.writeFileSync(input, '<span />');
+
+    const output = path.join(__dirname, '../../temp/watched.cpp');
+
+    const child = execCli([input, '-w', '-o', output], () => {
+      expect(
+        fs.readFileSync(input, 'utf8'),
+      ).toEqual('<span     />');
+      expect(
+        fs.readFileSync(output, 'utf8'),
+      ).toEqual('asmdom::h(u8"span")');
+      fs.writeFileSync(input, '<span />');
+      expect(killed).toEqual(true);
+      done();
+    });
+
+    let buffer = '';
+    let passedFirst = false;
+    child.stdout.on('data', (str) => {
+      buffer += str;
+      if (/span.cpp ->/.test(buffer)) {
+        if (!passedFirst) {
+          fs.writeFileSync(input, '<span     />');
+          buffer = '';
+          passedFirst = true;
+        } else if (!killed) {
+          child.kill();
+          killed = true;
+        }
+      }
+    });
+  });
+
+  test('should compile new files', (done) => {
+    let killed = false;
+    const inputDir = path.join(tempDir, 'watchNewFiles');
+    fs.mkdirSync(inputDir);
+    const input = path.join(inputDir, 'span.cpp');
+    fs.writeFileSync(input, '<span />');
+    const inputDiv = path.join(inputDir, 'div.cpp');
+
+    const outputDir = path.join(__dirname, '../../temp/watchedNewFiles');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
+    const output = path.join(outputDir, 'span.cpp');
+    const outputDiv = path.join(outputDir, 'div.cpp');
+
+    const child = execCli([inputDir, '-w', '-o', outputDir], () => {
+      expect(
+        fs.readFileSync(output, 'utf8'),
+      ).toEqual('asmdom::h(u8"span")');
+      expect(
+        fs.readFileSync(outputDiv, 'utf8'),
+      ).toEqual('asmdom::h(u8"div")');
+      expect(killed).toEqual(true);
+      done();
+    });
+
+    let buffer = '';
+    let passedFirst = false;
+    child.stdout.on('data', (str) => {
+      buffer += str;
+      if (/span.cpp ->/.test(buffer) && !passedFirst) {
+        fs.writeFileSync(inputDiv, '<div />');
+        buffer = '';
+        passedFirst = true;
+      } else if (/div.cpp ->/.test(buffer) && passedFirst && !killed) {
+        child.kill();
+        killed = true;
+      }
+    });
+  });
+
+  test('should recompile files in dir when they changed', (done) => {
+    let killed = false;
+    const inputDir = path.join(tempDir, 'watchFilesInDir');
+    fs.mkdirSync(inputDir);
+    const input = path.join(inputDir, 'span.cpp');
+    fs.writeFileSync(input, '<span />');
+    const inputDiv = path.join(inputDir, 'div.cpp');
+    fs.writeFileSync(inputDiv, '<div />');
+
+    const outputDir = path.join(__dirname, '../../temp/watchedFilesInDir');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
+    const output = path.join(outputDir, 'span.cpp');
+    const outputDiv = path.join(outputDir, 'div.cpp');
+
+    const child = execCli([inputDir, '-w', '-o', outputDir], () => {
+      expect(
+        fs.readFileSync(output, 'utf8'),
+      ).toEqual('asmdom::h(u8"span")');
+      expect(
+        fs.readFileSync(outputDiv, 'utf8'),
+      ).toEqual('asmdom::h(u8"div")');
+      expect(
+        fs.readFileSync(inputDiv, 'utf8'),
+      ).toEqual('<div   />');
+      expect(killed).toEqual(true);
+      done();
+    });
+
+    let buffer = '';
+    let passedFirst = false;
+    child.stdout.on('data', (str) => {
+      buffer += str;
+      if (/span.cpp ->/.test(buffer) && !passedFirst) {
+        fs.writeFileSync(inputDiv, '<div   />');
+        buffer = '';
+        passedFirst = true;
+      } else if (/div.cpp ->/.test(buffer) && passedFirst && !killed) {
+        child.kill();
+        killed = true;
+      }
+    });
+  });
+
+  test('should add new directories', (done) => {
+    let killed = false;
+    const inputDir = path.join(tempDir, 'watchNewDir');
+    fs.mkdirSync(inputDir);
+    const input = path.join(inputDir, 'span.cpp');
+    fs.writeFileSync(input, '<span />');
+    const newInputDir = path.join(inputDir, 'dir');
+
+    const outputDir = path.join(__dirname, '../../temp/watchedNewDir');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
+    const newOutputDir = path.join(outputDir, 'dir');
+
+    const child = execCli([inputDir, '-w', '-o', outputDir], () => {
+      expect(fs.existsSync(newOutputDir)).toEqual(true);
+      expect(killed).toEqual(true);
+      done();
+    });
+
+    let buffer = '';
+    let passedFirst = false;
+    child.stdout.on('data', (str) => {
+      buffer += str;
+      if (/span.cpp ->/.test(buffer) && !passedFirst) {
+        fs.mkdirSync(newInputDir);
+        buffer = '';
+        passedFirst = true;
+      } else if (passedFirst && !killed) {
+        child.kill();
+        killed = true;
+      }
+    });
+  });
+
+  test('should copy new non-compilable files', (done) => {
+    let killed = false;
+    const inputDir = path.join(tempDir, 'watchNewNonCopiableFiles');
+    fs.mkdirSync(inputDir);
+    const input = path.join(inputDir, 'span.cpp');
+    fs.writeFileSync(input, '<span />');
+    const inputDiv = path.join(inputDir, 'div.md');
+    fs.writeFileSync(inputDiv, '<div />');
+
+    const outputDir = path.join(__dirname, '../../temp/watchedNewNonCopiableFiles');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
+    const output = path.join(outputDir, 'span.cpp');
+    const outputDiv = path.join(outputDir, 'div.md');
+
+    const child = execCli([inputDir, '-w', '-o', outputDir], () => {
+      expect(
+        fs.readFileSync(output, 'utf8'),
+      ).toEqual('asmdom::h(u8"span")');
+      expect(
+        fs.readFileSync(outputDiv, 'utf8'),
+      ).toEqual('<div    />');
+      expect(killed).toEqual(true);
+      done();
+    });
+
+    let buffer = '';
+    let passedFirst = false;
+    child.stdout.on('data', (str) => {
+      buffer += str;
+      if (/span.cpp ->/.test(buffer) && !passedFirst) {
+        fs.writeFileSync(inputDiv, '<div    />');
+        buffer = '';
+        passedFirst = true;
+      } else if (passedFirst && !killed) {
+        child.kill();
+        killed = true;
+      }
+    });
+  });
+
+  // test('should do nothing with new non-copiable and non-compilable files')
 });
