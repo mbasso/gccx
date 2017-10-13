@@ -1,6 +1,6 @@
 {
   "name": "gccx",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Transforms CPX (JSX like syntax) into asm-dom Virtual DOM",
   "main": "lib/index.js",
   "jsnext:main": "es/index.js",
