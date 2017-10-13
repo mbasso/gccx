@@ -181,6 +181,43 @@ describe('cli', () => {
     });
   });
 
+  test('should support extensions wrapped by quotes', (done) => {
+    const inputDir = path.join('files', 'extensions');
+    const inputDiv = path.join(inputDir, 'div.md');
+    const inputImg = path.join(inputDir, 'img.example');
+
+    const outputDir = path.join(__dirname, '../../temp/extensions');
+    let clean = Promise.resolve();
+    if (fs.existsSync(outputDir)) {
+      clean = new Promise((resolve) => {
+        rimraf(outputDir, resolve);
+      });
+    }
+    clean.then(() => {
+      fs.mkdirSync(outputDir);
+      const outputSpan = path.join(outputDir, 'span.cpp');
+      const outputDiv = path.join(outputDir, 'div.md');
+      const outputImg = path.join(outputDir, 'img.example');
+
+      execCli([inputDir, '-o', outputDir, '-x', '".md",".example"'], (err, stdout) => {
+        expect(err).toEqual(0);
+        expect(
+          fs.readFileSync(outputSpan, 'utf8'),
+        ).toEqual('<span />');
+        expect(
+          fs.readFileSync(outputDiv, 'utf8'),
+        ).toEqual('asmdom::h(u8"div")');
+        expect(
+          fs.readFileSync(outputImg, 'utf8'),
+        ).toEqual('asmdom::h(u8"img")');
+        expect(stdout.trim()).toEqual(`
+          ${inputDiv} -> ${outputDiv}\n${inputImg} -> ${outputImg}
+        `.trim());
+        done();
+      });
+    });
+  });
+
   test('should copy files', (done) => {
     const inputDir = path.join('files', 'resources');
     const outputDir = path.join(__dirname, '../../temp/copied');
@@ -451,7 +488,7 @@ describe('cli', () => {
     });
   });
 
-  test('should recompile files when they changed', (done) => {
+  test('should recompile files when they change', (done) => {
     let killed = false;
     const inputDir = path.join(tempDir, 'watchFile');
     fs.mkdirSync(inputDir);
@@ -530,7 +567,7 @@ describe('cli', () => {
     });
   });
 
-  test('should recompile files in dir when they changed', (done) => {
+  test('should recompile files in dir when they change', (done) => {
     let killed = false;
     const inputDir = path.join(tempDir, 'watchFilesInDir');
     fs.mkdirSync(inputDir);
