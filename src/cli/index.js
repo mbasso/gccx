@@ -60,7 +60,7 @@ if (config.watch) {
 
   chokidar.watch(config.input, {
     persistent: true,
-    ignoreInitial: true,
+    // ignoreInitial: true,
   })
     .on('change', compilePath)
     .on('add', compilePath)
