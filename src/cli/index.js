@@ -1,4 +1,4 @@
-#!/usr/bin/env
+#!/usr/bin/env node
 import fs from 'fs';
 import path from 'path';
 import program from 'commander';
@@ -60,6 +60,7 @@ if (config.watch) {
 
   chokidar.watch(config.input, {
     persistent: true,
+    ignoreInitial: true,
   })
     .on('change', compilePath)
     .on('add', compilePath)
