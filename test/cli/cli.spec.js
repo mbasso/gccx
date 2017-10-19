@@ -4,6 +4,10 @@ import rimraf from 'rimraf';
 import { version } from '../../package.json';
 import { execCli } from './utils';
 
+jest.setTimeout(5000);
+
+const timeout = 750;
+
 describe('cli', () => {
   const tempDir = path.join(__dirname, '../../temp');
 
@@ -95,12 +99,8 @@ describe('cli', () => {
 
     execCli([inputDir, '-o', outputDir], (err, stdout) => {
       expect(err).toEqual(0);
-      expect(
-        fs.readFileSync(outputSpan, 'utf8'),
-      ).toEqual('asmdom::h(u8"span")');
-      expect(
-        fs.readFileSync(outputDiv, 'utf8'),
-      ).toEqual('asmdom::h(u8"div")');
+      expect(fs.readFileSync(outputSpan, 'utf8')).toEqual('asmdom::h(u8"span")');
+      expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('asmdom::h(u8"div")');
       expect(stdout.trim()).toEqual(`
         ${inputDiv} -> ${outputDiv}\n${inputSpan} -> ${outputSpan}
       `.trim());
@@ -127,12 +127,8 @@ describe('cli', () => {
 
         execCli([inputDir, '-o', outputDir, command, 'span'], (err, stdout) => {
           expect(err).toEqual(0);
-          expect(
-            fs.readFileSync(outputSpan, 'utf8'),
-          ).toEqual('<span />');
-          expect(
-            fs.readFileSync(outputDiv, 'utf8'),
-          ).toEqual('asmdom::h(u8"div")');
+          expect(fs.readFileSync(outputSpan, 'utf8')).toEqual('<span />');
+          expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('asmdom::h(u8"div")');
           expect(stdout.trim()).toEqual(`
           ${inputDiv} -> ${outputDiv}
         `.trim());
@@ -163,15 +159,9 @@ describe('cli', () => {
 
         execCli([inputDir, '-o', outputDir, command, '.md,.example'], (err, stdout) => {
           expect(err).toEqual(0);
-          expect(
-            fs.readFileSync(outputSpan, 'utf8'),
-          ).toEqual('<span />');
-          expect(
-            fs.readFileSync(outputDiv, 'utf8'),
-          ).toEqual('asmdom::h(u8"div")');
-          expect(
-            fs.readFileSync(outputImg, 'utf8'),
-          ).toEqual('asmdom::h(u8"img")');
+          expect(fs.readFileSync(outputSpan, 'utf8')).toEqual('<span />');
+          expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('asmdom::h(u8"div")');
+          expect(fs.readFileSync(outputImg, 'utf8')).toEqual('asmdom::h(u8"img")');
           expect(stdout.trim()).toEqual(`
           ${inputDiv} -> ${outputDiv}\n${inputImg} -> ${outputImg}
         `.trim());
@@ -201,15 +191,9 @@ describe('cli', () => {
 
       execCli([inputDir, '-o', outputDir, '-x', '".md",".example"'], (err, stdout) => {
         expect(err).toEqual(0);
-        expect(
-          fs.readFileSync(outputSpan, 'utf8'),
-        ).toEqual('<span />');
-        expect(
-          fs.readFileSync(outputDiv, 'utf8'),
-        ).toEqual('asmdom::h(u8"div")');
-        expect(
-          fs.readFileSync(outputImg, 'utf8'),
-        ).toEqual('asmdom::h(u8"img")');
+        expect(fs.readFileSync(outputSpan, 'utf8')).toEqual('<span />');
+        expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('asmdom::h(u8"div")');
+        expect(fs.readFileSync(outputImg, 'utf8')).toEqual('asmdom::h(u8"img")');
         expect(stdout.trim()).toEqual(`
           ${inputDiv} -> ${outputDiv}\n${inputImg} -> ${outputImg}
         `.trim());
@@ -227,9 +211,7 @@ describe('cli', () => {
     execCli([inputDir, '-o', outputDir], (err, stdout) => {
       expect(err).toEqual(0);
       expect(fs.readdirSync(outputDir)).toEqual(['foo.md']);
-      expect(
-        fs.readFileSync(outputFile, 'utf8'),
-      ).toEqual('example');
+      expect(fs.readFileSync(outputFile, 'utf8')).toEqual('example');
       expect(stdout.trim()).toEqual('');
       done();
     });
@@ -267,15 +249,9 @@ describe('cli', () => {
 
       execCli([inputDir, '-o', outputDir], (err, stdout) => {
         expect(err).toEqual(0);
-        expect(
-          fs.readFileSync(outputImg, 'utf8'),
-        ).toEqual('<img />');
-        expect(
-          fs.readFileSync(outputDiv, 'utf8'),
-        ).toEqual('<div />');
-        expect(
-          fs.readFileSync(outputSpan, 'utf8'),
-        ).toEqual('asmdom::h(u8"span")');
+        expect(fs.readFileSync(outputImg, 'utf8')).toEqual('<img />');
+        expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('<div />');
+        expect(fs.readFileSync(outputSpan, 'utf8')).toEqual('asmdom::h(u8"span")');
         expect(stdout.trim()).toEqual(`
           ${inputSpan} -> ${outputSpan}
         `.trim());
@@ -304,15 +280,9 @@ describe('cli', () => {
 
       execCli([inputDir, '-o', outputDir, '--no-gccxrc'], (err, stdout) => {
         expect(err).toEqual(0);
-        expect(
-          fs.readFileSync(outputImg, 'utf8'),
-        ).toEqual('asmdom::h(u8"img")');
-        expect(
-          fs.readFileSync(outputDiv, 'utf8'),
-        ).toEqual('<div />');
-        expect(
-          fs.readFileSync(outputSpan, 'utf8'),
-        ).toEqual('asmdom::h(u8"span")');
+        expect(fs.readFileSync(outputImg, 'utf8')).toEqual('asmdom::h(u8"img")');
+        expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('<div />');
+        expect(fs.readFileSync(outputSpan, 'utf8')).toEqual('asmdom::h(u8"span")');
         expect(stdout.trim()).toEqual(`
           ${inputImg} -> ${outputImg}\n${inputSpan} -> ${outputSpan}
         `.trim());
@@ -340,15 +310,9 @@ describe('cli', () => {
 
       execCli([inputDir, '-o', outputDir, '-x', '.cc'], (err, stdout) => {
         expect(err).toEqual(0);
-        expect(
-          fs.readFileSync(outputImg, 'utf8'),
-        ).toEqual('asmdom::h(u8"img")');
-        expect(
-          fs.readFileSync(outputDiv, 'utf8'),
-        ).toEqual('<div />');
-        expect(
-          fs.readFileSync(outputSpan, 'utf8'),
-        ).toEqual('<span />');
+        expect(fs.readFileSync(outputImg, 'utf8')).toEqual('asmdom::h(u8"img")');
+        expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('<div />');
+        expect(fs.readFileSync(outputSpan, 'utf8')).toEqual('<span />');
         expect(stdout.trim()).toEqual(`
           ${inputImg} -> ${outputImg}
         `.trim());
@@ -378,36 +342,30 @@ describe('cli', () => {
     execCli([inputDir, '-o', outputDir], (err, stdout) => {
       expect(err).toEqual(0);
       expect(fs.readdirSync(outputDir)).toEqual(['div.cpp', 'example.md', 'firstLevel']);
-      expect(
-        fs.readFileSync(path.join(outputDir, 'div.cpp'), 'utf8'),
-      ).toEqual('asmdom::h(u8"div")');
-      expect(
-        fs.readFileSync(path.join(outputDir, 'example.md'), 'utf8'),
-      ).toEqual('example');
+      expect(fs.readFileSync(path.join(outputDir, 'div.cpp'), 'utf8')).toEqual('asmdom::h(u8"div")');
+      expect(fs.readFileSync(path.join(outputDir, 'example.md'), 'utf8')).toEqual('example');
 
       const firstLevelDir = path.join(outputDir, 'firstLevel');
       expect(fs.readdirSync(firstLevelDir)).toEqual(['secondLevel', 'secondLevel2', 'span.cpp']);
-      expect(
-        fs.readFileSync(path.join(firstLevelDir, 'span.cpp'), 'utf8'),
-      ).toEqual('asmdom::h(u8"span")');
+      expect(fs.readFileSync(path.join(firstLevelDir, 'span.cpp'), 'utf8')).toEqual('asmdom::h(u8"span")');
 
       const secondLevelDir = path.join(firstLevelDir, 'secondLevel');
       expect(fs.readdirSync(secondLevelDir)).toEqual(['foo.md']);
-      expect(
-        fs.readFileSync(path.join(secondLevelDir, 'foo.md'), 'utf8'),
-      ).toEqual('foo');
+      expect(fs.readFileSync(path.join(secondLevelDir, 'foo.md'), 'utf8')).toEqual('foo');
 
       const secondLevel2Dir = path.join(firstLevelDir, 'secondLevel2');
       expect(fs.readdirSync(secondLevel2Dir)).toEqual(['img.cpp']);
-      expect(
-        fs.readFileSync(path.join(secondLevel2Dir, 'img.cpp'), 'utf8'),
-      ).toEqual('asmdom::h(u8"img")');
+      expect(fs.readFileSync(path.join(secondLevel2Dir, 'img.cpp'), 'utf8')).toEqual('asmdom::h(u8"img")');
 
-      expect(stdout.trim()).toEqual(
-        `${path.join(inputDir, 'div.cpp')} -> ${path.join(outputDir, 'div.cpp')}\n` +
-        `${path.join(inputDir, 'firstLevel', 'secondLevel2', 'img.cpp')} -> ${path.join(secondLevel2Dir, 'img.cpp')}\n` +
-        `${path.join(inputDir, 'firstLevel', 'span.cpp')} -> ${path.join(firstLevelDir, 'span.cpp')}`,
-      );
+      expect(stdout.trim()).toEqual(`${path.join(inputDir, 'div.cpp')} -> ${path.join(outputDir, 'div.cpp')}\n` +
+          `${path.join(inputDir, 'firstLevel', 'secondLevel2', 'img.cpp')} -> ${path.join(
+            secondLevel2Dir,
+            'img.cpp',
+          )}\n` +
+          `${path.join(inputDir, 'firstLevel', 'span.cpp')} -> ${path.join(
+            firstLevelDir,
+            'span.cpp',
+          )}`);
       done();
     });
   });
@@ -420,34 +378,22 @@ describe('cli', () => {
     execCli([inputDir, '-o', outputDir, '-i', 'firstLevel'], (err, stdout) => {
       expect(err).toEqual(0);
       expect(fs.readdirSync(outputDir)).toEqual(['div.cpp', 'example.md', 'firstLevel']);
-      expect(
-        fs.readFileSync(path.join(outputDir, 'div.cpp'), 'utf8'),
-      ).toEqual('asmdom::h(u8"div")');
-      expect(
-        fs.readFileSync(path.join(outputDir, 'example.md'), 'utf8'),
-      ).toEqual('example');
+      expect(fs.readFileSync(path.join(outputDir, 'div.cpp'), 'utf8')).toEqual('asmdom::h(u8"div")');
+      expect(fs.readFileSync(path.join(outputDir, 'example.md'), 'utf8')).toEqual('example');
 
       const firstLevelDir = path.join(outputDir, 'firstLevel');
       expect(fs.readdirSync(firstLevelDir)).toEqual(['secondLevel', 'secondLevel2', 'span.cpp']);
-      expect(
-        fs.readFileSync(path.join(firstLevelDir, 'span.cpp'), 'utf8'),
-      ).toEqual('<span />');
+      expect(fs.readFileSync(path.join(firstLevelDir, 'span.cpp'), 'utf8')).toEqual('<span />');
 
       const secondLevelDir = path.join(firstLevelDir, 'secondLevel');
       expect(fs.readdirSync(secondLevelDir)).toEqual(['foo.md']);
-      expect(
-        fs.readFileSync(path.join(secondLevelDir, 'foo.md'), 'utf8'),
-      ).toEqual('foo');
+      expect(fs.readFileSync(path.join(secondLevelDir, 'foo.md'), 'utf8')).toEqual('foo');
 
       const secondLevel2Dir = path.join(firstLevelDir, 'secondLevel2');
       expect(fs.readdirSync(secondLevel2Dir)).toEqual(['img.cpp']);
-      expect(
-        fs.readFileSync(path.join(secondLevel2Dir, 'img.cpp'), 'utf8'),
-      ).toEqual('<img />');
+      expect(fs.readFileSync(path.join(secondLevel2Dir, 'img.cpp'), 'utf8')).toEqual('<img />');
 
-      expect(stdout.trim()).toEqual((
-        `${path.join(inputDir, 'div.cpp')} -> ${path.join(outputDir, 'div.cpp')}`
-      ).trim());
+      expect(stdout.trim()).toEqual(`${path.join(inputDir, 'div.cpp')} -> ${path.join(outputDir, 'div.cpp')}`.trim());
       done();
     });
   });
@@ -463,9 +409,7 @@ describe('cli', () => {
       fs.writeFileSync(input, '<span />');
 
       const child = execCli([input, command], () => {
-        expect(
-          fs.readFileSync(input, 'utf8'),
-        ).toEqual('<span      />');
+        expect(fs.readFileSync(input, 'utf8')).toEqual('<span      />');
         expect(killed).toEqual(true);
         done();
       });
@@ -476,7 +420,9 @@ describe('cli', () => {
         buffer += str;
         if (/asmdom::h\(u8"span"\)/.test(buffer)) {
           if (!passedFirst) {
-            fs.writeFileSync(input, '<span      />');
+            setTimeout(() => {
+              fs.writeFileSync(input, '<span      />');
+            }, timeout);
             buffer = '';
             passedFirst = true;
           } else if (!killed) {
@@ -498,12 +444,8 @@ describe('cli', () => {
     const output = path.join(__dirname, '../../temp/watched.cpp');
 
     const child = execCli([input, '-w', '-o', output], () => {
-      expect(
-        fs.readFileSync(input, 'utf8'),
-      ).toEqual('<span     />');
-      expect(
-        fs.readFileSync(output, 'utf8'),
-      ).toEqual('asmdom::h(u8"span")');
+      expect(fs.readFileSync(input, 'utf8')).toEqual('<span     />');
+      expect(fs.readFileSync(output, 'utf8')).toEqual('asmdom::h(u8"span")');
       fs.writeFileSync(input, '<span />');
       expect(killed).toEqual(true);
       done();
@@ -515,7 +457,9 @@ describe('cli', () => {
       buffer += str;
       if (/span.cpp ->/.test(buffer)) {
         if (!passedFirst) {
-          fs.writeFileSync(input, '<span     />');
+          setTimeout(() => {
+            fs.writeFileSync(input, '<span     />');
+          }, timeout);
           buffer = '';
           passedFirst = true;
         } else if (!killed) {
@@ -542,12 +486,8 @@ describe('cli', () => {
     const outputDiv = path.join(outputDir, 'div.cpp');
 
     const child = execCli([inputDir, '-w', '-o', outputDir], () => {
-      expect(
-        fs.readFileSync(output, 'utf8'),
-      ).toEqual('asmdom::h(u8"span")');
-      expect(
-        fs.readFileSync(outputDiv, 'utf8'),
-      ).toEqual('asmdom::h(u8"div")');
+      expect(fs.readFileSync(output, 'utf8')).toEqual('asmdom::h(u8"span")');
+      expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('asmdom::h(u8"div")');
       expect(killed).toEqual(true);
       done();
     });
@@ -557,7 +497,9 @@ describe('cli', () => {
     child.stdout.on('data', (str) => {
       buffer += str;
       if (/span.cpp ->/.test(buffer) && !passedFirst) {
-        fs.writeFileSync(inputDiv, '<div />');
+        setTimeout(() => {
+          fs.writeFileSync(inputDiv, '<div />');
+        }, timeout);
         buffer = '';
         passedFirst = true;
       } else if (/div.cpp ->/.test(buffer) && passedFirst && !killed) {
@@ -584,15 +526,9 @@ describe('cli', () => {
     const outputDiv = path.join(outputDir, 'div.cpp');
 
     const child = execCli([inputDir, '-w', '-o', outputDir], () => {
-      expect(
-        fs.readFileSync(output, 'utf8'),
-      ).toEqual('asmdom::h(u8"span")');
-      expect(
-        fs.readFileSync(outputDiv, 'utf8'),
-      ).toEqual('asmdom::h(u8"div")');
-      expect(
-        fs.readFileSync(inputDiv, 'utf8'),
-      ).toEqual('<div   />');
+      expect(fs.readFileSync(output, 'utf8')).toEqual('asmdom::h(u8"span")');
+      expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('asmdom::h(u8"div")');
+      expect(fs.readFileSync(inputDiv, 'utf8')).toEqual('<div   />');
       expect(killed).toEqual(true);
       done();
     });
@@ -602,7 +538,9 @@ describe('cli', () => {
     child.stdout.on('data', (str) => {
       buffer += str;
       if (/span.cpp ->/.test(buffer) && !passedFirst) {
-        fs.writeFileSync(inputDiv, '<div   />');
+        setTimeout(() => {
+          fs.writeFileSync(inputDiv, '<div   />');
+        }, timeout);
         buffer = '';
         passedFirst = true;
       } else if (/div.cpp ->/.test(buffer) && passedFirst && !killed) {
@@ -633,16 +571,16 @@ describe('cli', () => {
     });
 
     let buffer = '';
-    let passedFirst = false;
     child.stdout.on('data', (str) => {
       buffer += str;
-      if (/span.cpp ->/.test(buffer) && !passedFirst) {
-        fs.mkdirSync(newInputDir);
-        buffer = '';
-        passedFirst = true;
-      } else if (passedFirst && !killed) {
-        child.kill();
-        killed = true;
+      if (/span.cpp ->/.test(buffer)) {
+        setTimeout(() => {
+          fs.mkdirSync(newInputDir);
+          setTimeout(() => {
+            child.kill();
+            killed = true;
+          }, timeout);
+        }, timeout);
       }
     });
   });
@@ -664,30 +602,62 @@ describe('cli', () => {
     const outputDiv = path.join(outputDir, 'div.md');
 
     const child = execCli([inputDir, '-w', '-o', outputDir], () => {
-      expect(
-        fs.readFileSync(output, 'utf8'),
-      ).toEqual('asmdom::h(u8"span")');
-      expect(
-        fs.readFileSync(outputDiv, 'utf8'),
-      ).toEqual('<div    />');
+      expect(fs.readFileSync(output, 'utf8')).toEqual('asmdom::h(u8"span")');
+      expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('<div    />');
       expect(killed).toEqual(true);
       done();
     });
 
     let buffer = '';
-    let passedFirst = false;
     child.stdout.on('data', (str) => {
       buffer += str;
-      if (/span.cpp ->/.test(buffer) && !passedFirst) {
-        fs.writeFileSync(inputDiv, '<div    />');
-        buffer = '';
-        passedFirst = true;
-      } else if (passedFirst && !killed) {
-        child.kill();
-        killed = true;
+      if (/span.cpp ->/.test(buffer)) {
+        setTimeout(() => {
+          fs.writeFileSync(inputDiv, '<div    />');
+          setTimeout(() => {
+            child.kill();
+            killed = true;
+          }, timeout);
+        }, timeout);
       }
     });
   });
 
-  // test('should do nothing with new non-copiable and non-compilable files')
+  test('should do nothing with new non-copiable and non-compilable files', (done) => {
+    let killed = false;
+    const inputDir = path.join(tempDir, 'watchNewNonCopiableNonCompilableFiles');
+    fs.mkdirSync(inputDir);
+    const input = path.join(inputDir, 'span.cpp');
+    fs.writeFileSync(input, '<span />');
+    const inputDiv = path.join(inputDir, 'div.md');
+    fs.writeFileSync(inputDiv, '<div />');
+
+    const outputDir = path.join(__dirname, '../../temp/watchedNewNonCopiableNonCompilableFiles');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
+    const output = path.join(outputDir, 'span.cpp');
+    const outputDiv = path.join(outputDir, 'div.md');
+
+    const child = execCli([inputDir, '-w', '-o', outputDir, '--no-copy-files'], () => {
+      expect(fs.readFileSync(output, 'utf8')).toEqual('asmdom::h(u8"span")');
+      expect(fs.existsSync(outputDiv)).toEqual(false);
+      expect(killed).toEqual(true);
+      done();
+    });
+
+    let buffer = '';
+    child.stdout.on('data', (str) => {
+      buffer += str;
+      if (/span.cpp ->/.test(buffer)) {
+        setTimeout(() => {
+          fs.writeFileSync(inputDiv, '<div    />');
+          setTimeout(() => {
+            child.kill();
+            killed = true;
+          }, timeout);
+        }, timeout);
+      }
+    });
+  });
 });
