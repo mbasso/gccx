@@ -56,7 +56,7 @@ if (config.watch) {
   const onCompilationError = (file, ex) => {
     if (ex !== undefined && ex !== null) {
       // eslint-disable-next-line
-      console.log(`\nError in file: ${file}\n\n${ex.message || ex}\n`);
+      console.error(`\nError in file: ${file}\n\n${ex.message || ex}\n`);
     }
   };
 

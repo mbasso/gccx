@@ -1,23 +1,23 @@
 import fs from 'fs-extra';
 import chalk from 'chalk';
 
-const print = ({
-  color,
-  message,
-}) => {
-  //eslint-disable-next-line
-  console.log(chalk.bold[color](message));
+const print = ({ color, message, type = 'log' }) => {
+  // eslint-disable-next-line
+  console[type](chalk.bold[color](message));
 };
 
-const error = message => print({
-  color: 'red',
-  message,
-});
+const error = message =>
+  print({
+    color: 'red',
+    message,
+    type: 'error',
+  });
 
-const success = message => print({
-  color: 'green',
-  message,
-});
+const success = message =>
+  print({
+    color: 'green',
+    message,
+  });
 
 export const exit = ({ code = 0, message = '' } = {}) => {
   if (message) {
@@ -31,4 +31,4 @@ export const exit = ({ code = 0, message = '' } = {}) => {
   process.exit(code);
 };
 
-export const copy = fs.copy;
+export const { copy } = fs;

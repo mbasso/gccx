@@ -39,10 +39,10 @@ describe('cli', () => {
   });
 
   test('should exit if input is not valid', (done) => {
-    execCli(['files/notValid.cpp'], (err, stdout) => {
+    execCli(['files/notValid.cpp'], (err, stdout, stderr) => {
       expect(err).toBeDefined();
       expect(err.message).toEqual('1');
-      expect(/Error /.test(stdout)).toEqual(true);
+      expect(/Error /.test(stderr)).toEqual(true);
       done();
     });
   });
@@ -694,17 +694,22 @@ describe('cli', () => {
       done();
     });
 
-    let buffer = '';
+    let outBuffer = '';
+    let errBuffer = '';
     let passedFirst = false;
     child.stdout.on('data', (str) => {
-      buffer += str;
-      if (/span.cpp ->/.test(buffer) && !passedFirst) {
+      outBuffer += str;
+      if (/span.cpp ->/.test(outBuffer) && !passedFirst) {
         setTimeout(() => {
           fs.writeFileSync(inputDiv, '<div></span>');
         }, timeout);
-        buffer = '';
         passedFirst = true;
-      } else if (/Error in file: /.test(buffer) && passedFirst && !killed) {
+      }
+    });
+
+    child.stderr.on('data', (str) => {
+      errBuffer += str;
+      if (/Error in file: /.test(errBuffer) && passedFirst && !killed) {
         child.kill();
         killed = true;
       }
@@ -731,19 +736,24 @@ describe('cli', () => {
       done();
     });
 
-    let buffer = '';
+    let outBuffer = '';
+    let errBuffer = '';
     let passedFirst = false;
     child.stdout.on('data', (str) => {
-      buffer += str;
-      if (/Error in file: /.test(buffer) && !passedFirst) {
+      outBuffer += str;
+      if (/span.cpp ->/.test(outBuffer) && passedFirst && !killed) {
+        child.kill();
+        killed = true;
+      }
+    });
+
+    child.stderr.on('data', (str) => {
+      errBuffer += str;
+      if (/Error in file: /.test(errBuffer) && !passedFirst) {
         setTimeout(() => {
           fs.writeFileSync(input, '<span></span>');
         }, timeout);
-        buffer = '';
         passedFirst = true;
-      } else if (/span.cpp ->/.test(buffer) && passedFirst && !killed) {
-        child.kill();
-        killed = true;
       }
     });
   });
