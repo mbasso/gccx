@@ -34,6 +34,11 @@ if (input === undefined) {
 
 const config = getConfig(input, program);
 
+// eslint-disable-next-line
+console.log('\n');
+
+const compileFirst = () => compile(config.input, config.output, config, true);
+
 if (config.watch) {
   const getOutputPath = (inputPath) => {
     let result;
@@ -48,8 +53,17 @@ if (config.watch) {
     return result;
   };
 
+  const onCompilationError = (file, ex) => {
+    if (ex !== undefined && ex !== null) {
+      // eslint-disable-next-line
+      console.log(`\nError in file: ${file}\n\n${ex.message || ex}\n`);
+    }
+  };
+
+  compileFirst().catch(onCompilationError.bind(null, config.input));
+
   const compilePath = (changed) => {
-    compile(changed, getOutputPath(changed), config);
+    compile(changed, getOutputPath(changed), config).catch(onCompilationError.bind(null, changed));
   };
 
   chokidar
@@ -70,9 +84,11 @@ if (config.watch) {
         code: 1,
         message: error,
       }));
+} else {
+  compileFirst().catch((ex) => {
+    exit({
+      code: 1,
+      message: ex && ex.message ? ex.message : ex,
+    });
+  });
 }
-
-// eslint-disable-next-line
-console.log('\n');
-
-compile(config.input, config.output, config, true);

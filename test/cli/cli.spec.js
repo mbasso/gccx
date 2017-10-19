@@ -38,6 +38,15 @@ describe('cli', () => {
     });
   });
 
+  test('should exit if input is not valid', (done) => {
+    execCli(['files/notValid.cpp'], (err, stdout) => {
+      expect(err).toBeDefined();
+      expect(err.message).toEqual('1');
+      expect(/Error /.test(stdout)).toEqual(true);
+      done();
+    });
+  });
+
   ['-V', '--version'].forEach((command) => {
     test(`should output version with ${command}`, (done) => {
       execCli([command], (err, stdout) => {
@@ -657,6 +666,84 @@ describe('cli', () => {
             killed = true;
           }, timeout);
         }, timeout);
+      }
+    });
+  });
+
+  test('should log errors while watching', (done) => {
+    let killed = false;
+    const inputDir = path.join(tempDir, 'watchErrors');
+    fs.mkdirSync(inputDir);
+    const input = path.join(inputDir, 'span.cpp');
+    fs.writeFileSync(input, '<span />');
+    const inputDiv = path.join(inputDir, 'div.cpp');
+    fs.writeFileSync(inputDiv, '<div />');
+
+    const outputDir = path.join(__dirname, '../../temp/watchedErrors');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
+    const output = path.join(outputDir, 'span.cpp');
+    const outputDiv = path.join(outputDir, 'div.cpp');
+
+    const child = execCli([inputDir, '-w', '-o', outputDir], () => {
+      expect(fs.readFileSync(output, 'utf8')).toEqual('asmdom::h(u8"span")');
+      expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('asmdom::h(u8"div")');
+      expect(fs.readFileSync(inputDiv, 'utf8')).toEqual('<div></span>');
+      expect(killed).toEqual(true);
+      done();
+    });
+
+    let buffer = '';
+    let passedFirst = false;
+    child.stdout.on('data', (str) => {
+      buffer += str;
+      if (/span.cpp ->/.test(buffer) && !passedFirst) {
+        setTimeout(() => {
+          fs.writeFileSync(inputDiv, '<div></span>');
+        }, timeout);
+        buffer = '';
+        passedFirst = true;
+      } else if (/Error in file: /.test(buffer) && passedFirst && !killed) {
+        child.kill();
+        killed = true;
+      }
+    });
+  });
+
+  test('should log errors when watch start', (done) => {
+    let killed = false;
+    const inputDir = path.join(tempDir, 'watchErrorsStart');
+    fs.mkdirSync(inputDir);
+    const input = path.join(inputDir, 'span.cpp');
+    fs.writeFileSync(input, '<span></div>');
+
+    const outputDir = path.join(__dirname, '../../temp/watchedErrorsStart');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
+    const output = path.join(outputDir, 'span.cpp');
+
+    const child = execCli([inputDir, '-w', '-o', outputDir], () => {
+      expect(fs.readFileSync(input, 'utf8')).toEqual('<span></span>');
+      expect(fs.readFileSync(output, 'utf8')).toEqual('asmdom::h(u8"span")');
+      expect(killed).toEqual(true);
+      done();
+    });
+
+    let buffer = '';
+    let passedFirst = false;
+    child.stdout.on('data', (str) => {
+      buffer += str;
+      if (/Error in file: /.test(buffer) && !passedFirst) {
+        setTimeout(() => {
+          fs.writeFileSync(input, '<span></span>');
+        }, timeout);
+        buffer = '';
+        passedFirst = true;
+      } else if (/span.cpp ->/.test(buffer) && passedFirst && !killed) {
+        child.kill();
+        killed = true;
       }
     });
   });

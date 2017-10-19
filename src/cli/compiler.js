@@ -15,11 +15,16 @@ const compile = (pathIn, pathOut, opts, ignoreChecks = false) => {
         );
       }
       if (compilable && opts.ignore) {
-        compilable = !(new RegExp(opts.ignore)).test(pathIn);
+        compilable = !new RegExp(opts.ignore).test(pathIn);
       }
     }
     if (compilable) {
-      const code = parser.parse(fs.readFileSync(pathIn, 'utf8'));
+      let code;
+      try {
+        code = parser.parse(fs.readFileSync(pathIn, 'utf8'));
+      } catch (ex) {
+        return Promise.reject(ex);
+      }
       if (pathOut) {
         fs.writeFileSync(pathOut, code);
         // eslint-disable-next-line
@@ -32,19 +37,18 @@ const compile = (pathIn, pathOut, opts, ignoreChecks = false) => {
       return copy(pathIn, pathOut);
     }
   } else if (file.isDirectory()) {
-    const compiles = fs.readdirSync(pathIn)
-      .map((subPath) => {
-        const pathInSub = path.join(pathIn, subPath);
-        const pathOutSub = path.join(pathOut, subPath);
+    const compiles = fs.readdirSync(pathIn).map((subPath) => {
+      const pathInSub = path.join(pathIn, subPath);
+      const pathOutSub = path.join(pathOut, subPath);
 
-        if (fs.lstatSync(pathInSub).isDirectory()) {
-          if (!fs.existsSync(pathOutSub)) {
-            fs.mkdirSync(pathOutSub);
-          }
+      if (fs.lstatSync(pathInSub).isDirectory()) {
+        if (!fs.existsSync(pathOutSub)) {
+          fs.mkdirSync(pathOutSub);
         }
+      }
 
-        return compile(pathInSub, pathOutSub, opts);
-      });
+      return compile(pathInSub, pathOutSub, opts);
+    });
     return Promise.all(compiles);
   }
   return Promise.resolve();
