@@ -14,6 +14,60 @@
 
 ---
 
+## Installation
+
+You can install gccx using [npm](https://www.npmjs.com/package/gccx):
+
+```bash
+npm install --save-dev gccx
+```
+
+or, if you prefer, you can install gccx globally with:
+
+```bash
+npm install -g gccx
+```
+
+## Usage
+
+Once you have installed gccx, you can use it from the command line or from javascript. Here is an example of both:
+
+```bash
+gccx src --output dist --watch
+```
+
+supposing a CommonJS environment, you can import decorators in this way and immediately use them with no configuration.
+
+```js
+import gccx from 'gccx';
+
+const code = `
+	#include "../asm-dom/asm-dom.hpp"
+	#include <emscripten/val.h>
+	#include <string>
+
+	int main() {
+		VNode* vnode = <h1>Hello world!</h1>;
+
+		asmdom::patch(
+			emscripten::val::global("document").call<emscripten::val>(
+				"getElementById",
+				std::string("root")
+			),
+			vnode
+		);
+
+		return 0;
+	};
+`;
+
+const compiled = gccx.parse(code); // compiled code as string
+```
+
+## Documentation
+
+Visit [docs](https://github.com/mbasso/gccx/blob/master/docs) folder to find the complete doc of gccx.
+
 ## Change Log
 
 This project adheres to [Semantic Versioning](http://semver.org/).  
