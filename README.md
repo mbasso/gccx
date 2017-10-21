@@ -46,10 +46,12 @@ const code = `
   #include <emscripten/val.h>
   #include <string>
 
+  using namespace asmdom;
+
   int main() {
     VNode* vnode = <h1>Hello world!</h1>;
 
-    asmdom::patch(
+    patch(
       emscripten::val::global("document").call<emscripten::val>(
         "getElementById",
         std::string("root")
