@@ -36,29 +36,29 @@ Once you have installed gccx, you can use it from the command line or from javas
 gccx src --output dist --watch
 ```
 
-supposing a CommonJS environment, you can import decorators in this way and immediately use them with no configuration.
+supposing a CommonJS environment, you can import gccx in this way and immediately use it with no configuration.
 
 ```js
 import gccx from 'gccx';
 
 const code = `
-	#include "../asm-dom/asm-dom.hpp"
-	#include <emscripten/val.h>
-	#include <string>
+  #include "../asm-dom/asm-dom.hpp"
+  #include <emscripten/val.h>
+  #include <string>
 
-	int main() {
-		VNode* vnode = <h1>Hello world!</h1>;
+  int main() {
+    VNode* vnode = <h1>Hello world!</h1>;
 
-		asmdom::patch(
-			emscripten::val::global("document").call<emscripten::val>(
-				"getElementById",
-				std::string("root")
-			),
-			vnode
-		);
+    asmdom::patch(
+      emscripten::val::global("document").call<emscripten::val>(
+        "getElementById",
+        std::string("root")
+      ),
+      vnode
+    );
 
-		return 0;
-	};
+    return 0;
+  };
 `;
 
 const compiled = gccx.parse(code); // compiled code as string
