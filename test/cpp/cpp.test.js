@@ -17,13 +17,19 @@ describe('compiled cpp validity', () => {
   try {
     fs.readdirSync(__dirname).forEach((file) => {
       if (/\.cpp$/.test(file)) {
-        test(file, (done) => {
-          exec(`emcc --bind -s \"EXPORTED_RUNTIME_METHODS=['UTF8ToString']\" -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s ABORTING_MALLOC=1 -s NO_EXIT_RUNTIME=1 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=2 ${path.join(__dirname, file)} ./node_modules/asm-dom/cpp/asm-dom.cpp -o ./temp/${file.replace(/\.cpp$/, '')}.asm.js`)
-            .then(done)
-            .catch((emccError) => {
-              exec(`exec error: ${emccError}`);
-            });
-        });
+        test(
+          file
+            .replace(/\.cpp$/, '')
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .toLowerCase(),
+          (done) => {
+            exec(`emcc --bind -s \"EXPORTED_RUNTIME_METHODS=['UTF8ToString']\" -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s ABORTING_MALLOC=1 -s NO_EXIT_RUNTIME=1 -s NO_FILESYSTEM=1 -s DISABLE_EXCEPTION_CATCHING=2 ${path.join(__dirname, file)} ./node_modules/asm-dom/cpp/asm-dom.cpp -o ./temp/${file.replace(/\.cpp$/, '')}.asm.js`)
+              .then(done)
+              .catch((emccError) => {
+                exec(`exec error: ${emccError}`);
+              });
+          },
+        );
       }
     });
   } catch (ex) {
