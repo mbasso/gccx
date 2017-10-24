@@ -255,12 +255,14 @@ describe('cli', () => {
       const outputSpan = path.join(outputDir, 'span.cpp');
       const outputDiv = path.join(outputDir, 'div.md');
       const outputImg = path.join(outputDir, 'img.cc');
+      const outputBar = path.join(outputDir, 'folder', 'bar.cpp');
 
       execCli([inputDir, '-o', outputDir], (err, stdout) => {
         expect(err).toEqual(0);
         expect(fs.readFileSync(outputImg, 'utf8')).toEqual('<img />');
         expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('<div />');
         expect(fs.readFileSync(outputSpan, 'utf8')).toEqual('asmdom::h(u8"span")');
+        expect(fs.readFileSync(outputBar, 'utf8')).toEqual('<img />');
         expect(stdout.trim()).toEqual(`
           ${inputSpan} -> ${outputSpan}
         `.trim());
@@ -273,6 +275,7 @@ describe('cli', () => {
     const inputDir = path.join('files', 'gccxrc');
     const inputSpan = path.join(inputDir, 'span.cpp');
     const inputImg = path.join(inputDir, 'img.cc');
+    const inputBar = path.join(inputDir, 'folder', 'bar.cpp');
 
     const outputDir = path.join(__dirname, '../../temp/gccxrc');
     let clean = Promise.resolve();
@@ -286,14 +289,16 @@ describe('cli', () => {
       const outputSpan = path.join(outputDir, 'span.cpp');
       const outputDiv = path.join(outputDir, 'div.md');
       const outputImg = path.join(outputDir, 'img.cc');
+      const outputBar = path.join(outputDir, 'folder', 'bar.cpp');
 
       execCli([inputDir, '-o', outputDir, '--no-gccxrc'], (err, stdout) => {
         expect(err).toEqual(0);
         expect(fs.readFileSync(outputImg, 'utf8')).toEqual('asmdom::h(u8"img")');
         expect(fs.readFileSync(outputDiv, 'utf8')).toEqual('<div />');
         expect(fs.readFileSync(outputSpan, 'utf8')).toEqual('asmdom::h(u8"span")');
+        expect(fs.readFileSync(outputBar, 'utf8')).toEqual('asmdom::h(u8"img")');
         expect(stdout.trim()).toEqual(`
-          ${inputImg} -> ${outputImg}\n${inputSpan} -> ${outputSpan}
+          ${inputBar} -> ${outputBar}\n${inputImg} -> ${outputImg}\n${inputSpan} -> ${outputSpan}
         `.trim());
         done();
       });

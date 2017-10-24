@@ -1,12 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import parser from '../';
+import getConfig from './config';
 import { copy } from './utils';
 
-const compile = (pathIn, pathOut, opts, ignoreChecks = false) => {
+const compile = (pathIn, pathOut, program, ignoreChecks = false) => {
   const file = fs.lstatSync(pathIn);
   if (file.isFile()) {
     let compilable = true;
+    const opts = getConfig(pathIn, program);
     if (!ignoreChecks) {
       if (compilable && opts.extensions) {
         compilable = opts.extensions.reduce(
@@ -47,7 +49,7 @@ const compile = (pathIn, pathOut, opts, ignoreChecks = false) => {
         }
       }
 
-      return compile(pathInSub, pathOutSub, opts);
+      return compile(pathInSub, pathOutSub, program);
     });
     return Promise.all(compiles);
   }

@@ -10,6 +10,18 @@ const defaultConfig = {
   watch: false,
 };
 
+const getGccxrc = (input) => {
+  const gccxrcPath = path.join(
+    fs.lstatSync(input).isFile() ? path.resolve(input, '../') : input,
+    '.gccxrc',
+  );
+  if (fs.existsSync(gccxrcPath)) {
+    return JSON.parse(fs.readFileSync(gccxrcPath, 'utf8'));
+  }
+  const parent = path.resolve(input, '../');
+  return input !== parent ? getGccxrc(path.resolve(input, '../')) : {};
+};
+
 const mergeConfig = (config1, config2) => {
   const config = {};
   Object.keys(defaultConfig).forEach((key) => {
@@ -34,10 +46,10 @@ export default function buildConfig(input, program = {}) {
     ...defaultConfig,
   };
 
-  const gccxrcPath = path.join(process.cwd(), '.gccxrc');
-  if ((program.gccxrc || program.gccxrc === undefined) && fs.existsSync(gccxrcPath)) {
-    const gccxrcConfigs = JSON.parse(fs.readFileSync(gccxrcPath, 'utf8'));
-    config = mergeConfig(config, gccxrcConfigs);
+  const inputIsDirectory = fs.lstatSync(input).isDirectory();
+
+  if ((program.gccxrc || program.gccxrc === undefined)) {
+    config = mergeConfig(config, getGccxrc(input));
   }
 
   config = mergeConfig(config, program);
@@ -48,7 +60,6 @@ export default function buildConfig(input, program = {}) {
     }
   });
 
-  const inputIsDirectory = fs.lstatSync(input).isDirectory();
   if (inputIsDirectory && !config.output) {
     throw new Error('invalid config: cannot use input directory without output option');
   } else if (inputIsDirectory && /(\.\w+)+/.test(config.output)) {

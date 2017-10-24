@@ -37,7 +37,7 @@ const config = getConfig(input, program);
 // eslint-disable-next-line
 console.log('\n');
 
-const compileFirst = () => compile(config.input, config.output, config, true);
+const compileFirst = () => compile(config.input, config.output, program, true);
 
 if (config.watch) {
   const getOutputPath = (inputPath) => {
@@ -63,7 +63,7 @@ if (config.watch) {
   compileFirst().catch(onCompilationError.bind(null, config.input));
 
   const compilePath = (changed) => {
-    compile(changed, getOutputPath(changed), config).catch(onCompilationError.bind(null, changed));
+    compile(changed, getOutputPath(changed), program).catch(onCompilationError.bind(null, changed));
   };
 
   chokidar

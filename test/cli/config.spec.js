@@ -1,12 +1,6 @@
 import buildConfig from '../../src/cli/config';
 
 describe('config', () => {
-  const processCwd = process.cwd;
-
-  afterEach(() => {
-    process.cwd = processCwd;
-  });
-
   test('should throw if input is not a string', () => {
     expect(
       () => buildConfig(),
@@ -76,15 +70,19 @@ describe('config', () => {
   });
 
   test('should get config from gccxrc', () => {
-    process.cwd = () => __dirname;
-    const config = buildConfig('package.json');
+    const config = buildConfig('./test/cli/config.spec.js');
+    expect(config.extensions).toEqual(['.cpp']);
+    expect(config.ignore).toEqual('foo');
+  });
+
+  test('should get config from gccxrc in parent folder', () => {
+    const config = buildConfig('./test/cli/files/span.cpp');
     expect(config.extensions).toEqual(['.cpp']);
     expect(config.ignore).toEqual('foo');
   });
 
   test('should overwrite gccxrc config from command line', () => {
-    process.cwd = () => __dirname;
-    const config = buildConfig('package.json', {
+    const config = buildConfig('./test/cli/config.spec.js', {
       ignore: 'bar',
     });
     expect(config.extensions).toEqual(['.cpp']);
