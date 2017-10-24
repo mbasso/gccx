@@ -1,7 +1,12 @@
 ## Table of contents
 
+- [Motivation](#motivation)
 - [Installation](#installation)
 - [Usage](#usage)
+
+## Motivation
+
+If you want to dynamically compile some C++ files, create templates or develop plugins for other tools (a webpack loader for example) you can use our javascript APIs. This allows you use gccx directly from JS code without cli.
 
 ## Installation
 
