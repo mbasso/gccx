@@ -14,6 +14,8 @@
 
 ---
 
+![Preview](preview.jpeg)
+
 ## Installation
 
 You can install gccx using [npm](https://www.npmjs.com/package/gccx):
