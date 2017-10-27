@@ -58,12 +58,11 @@ const escape = (char, str) => str.replace(new RegExp(`(${char})`, 'g'), '\\$1');
 
 const escapeQuotes = escape.bind(null, '"');
 
-const getTagName = (sel) => {
-  if (sel.indexOf('u8"') === 0) {
-    return sel.substring(0, sel.length - 1).replace('u8"', '');
-  }
-  return sel;
-};
+const getTagName = sel => (
+  sel.indexOf('u8"') === 0
+    ? sel.slice(0, -1).replace('u8"', '')
+    : sel
+);
 
 const filterByType = (type, vnode) =>
   vnode.data
@@ -77,17 +76,15 @@ const filterProps = filterByType.bind(null, 'prop');
 const filterCallbacks = filterByType.bind(null, 'callback');
 
 const createMaps = maps =>
-  maps.map((map) => {
-    let res = '';
-    if (map.values.length !== 0) {
-      res += `${map.id} {`;
-      res += map.values
-        .map(attr => `{${attr.name}, ${attr.value}}`)
-        .join(', ');
-      res += '}';
-    }
-    return res;
-  }).filter(map => map !== '')
+  maps.map(map => (
+    map.values.length === 0
+      ? ''
+      : `${map.id} {${
+        map.values
+          .map(attr => `{${attr.name}, ${attr.value}}`)
+          .join(', ')
+      }}`
+  )).filter(map => map !== '')
     .join(', ');
 
 const aggregateStrings = (vnodes) => {

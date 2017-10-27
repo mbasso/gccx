@@ -1,8 +1,5 @@
 export const composeRegex = (...regexps) => new RegExp(
-  regexps.reduce((str, regex) => {
-    const regexString = regex.toString();
-    return `${str}${regexString.substring(1, regexString.length - 1)}`;
-  }, ''),
+  regexps.reduce((str, regex) => `${str}${regex.toString().slice(1, -1)}`, ''),
 );
 
 export const stringMatch = (str, matcher) => {
