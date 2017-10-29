@@ -1,5 +1,7 @@
 import { composeRegex, stringMatch } from './utils';
 
+let id = -1;
+
 const attributeRegex = /\s*(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\s*(?::|-)\s*[a-zA-Z_])?)+\s*/;
 const parenthesizedAttributeRegex = composeRegex(/\s*(?:\{|\[|\()\s*/, attributeRegex, /\s*(?:\)|\]|\})\s*/);
 const attributeAssignmentRegex = /\s*=\s*(?:{|"|')\s*/;
@@ -63,6 +65,32 @@ const getTagName = sel => (
     ? sel.slice(0, -1).replace('u8"', '')
     : sel
 );
+
+let createVNode;
+
+const getChildrenDeclaration = children =>
+  `asmdom::Children {${children.map(createVNode).join(', ')}}`;
+
+const splitArray = (arr, predicate) => {
+  const result = [];
+  let slicedArray = arr;
+  while (slicedArray.length !== 0) {
+    if (predicate(slicedArray[0])) {
+      result.push(slicedArray[0]);
+      slicedArray = slicedArray.slice(1, slicedArray.length);
+    } else {
+      const vectorIndex = slicedArray.findIndex(predicate);
+      if (vectorIndex !== -1) {
+        result.push(slicedArray.slice(0, vectorIndex));
+        slicedArray = slicedArray.slice(vectorIndex);
+      } else {
+        result.push(slicedArray);
+        slicedArray = [];
+      }
+    }
+  }
+  return result;
+};
 
 const filterByType = (type, vnode) =>
   vnode.data
@@ -131,7 +159,7 @@ const aggregateNodes = (vnodes) => {
   return computedVnodes;
 };
 
-const createVNode = (data) => {
+createVNode = (data) => {
   let vnode;
   if (data.type === 'VNode') return data.value;
   if (data.type === 'string') return `asmdom::h(${data.value.trim()}, true)`;
@@ -163,11 +191,34 @@ const createVNode = (data) => {
           vnode += children[0].aggregated !== true
             ? `std::string(${children[0].value.trim()})`
             : children[0].value.trim();
+        } else if (children[0].type === 'Children') {
+          vnode += children[0].value;
         } else {
           vnode += createVNode(children[0]);
         }
       } else if (children.length > 1) {
-        vnode += `, asmdom::Children {${children.map(createVNode).join(', ')}}`;
+        if (children.find(child => child.type === 'Children') !== undefined) {
+          // eslint-disable-next-line
+          const resultVar = `_asmdom_ch_concat_${++id}`;
+          const childrenGroups = splitArray(children, x => x.type === 'Children').map(group => ({
+            // eslint-disable-next-line
+            identifier: `_asmdom_ch_concat_${++id}`,
+            value: group,
+          }));
+          const identifiers = childrenGroups.map(x => x.identifier);
+          vnode += ', [&]() -> asmdom::Children {';
+          vnode += `asmdom::Children ${resultVar};`;
+          vnode += childrenGroups.map(
+            ({ identifier, value }) => `asmdom::Children ${identifier} = ${value.type === 'Children' ? value.value : getChildrenDeclaration(value)};`,
+          ).join('');
+          vnode += `${resultVar}.reserve(${identifiers.map(x => `${x}.size()`).join(' + ')});`;
+          vnode += identifiers.map(
+            x => `${resultVar}.insert(${resultVar}.end(), ${x}.begin(), ${x}.end());`,
+          ).join('');
+          vnode += `return ${resultVar};}()`;
+        } else {
+          vnode += `, ${getChildrenDeclaration(children)}`;
+        }
       }
     }
 

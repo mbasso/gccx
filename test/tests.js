@@ -76,14 +76,14 @@ export default [
   },
   {
     message: 'should support all syntax in comments',
-    input: `<!-- VNodestringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 -->`,
-    output: `asmdom::h(u8"!", std::string(u8" VNodestringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789 "))`,
+    input: `<!-- VNodeChildrenstringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 -->`,
+    output: `asmdom::h(u8"!", std::string(u8" VNodeChildrenstringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789 "))`,
   },
   {
     message: 'should replace new line and spaces with one space in comments',
-    input: `<!-- VNodestringreturn-><>/*.-:!={}
+    input: `<!-- VNodeChildrenstringreturn-><>/*.-:!={}
         []()\\"'0123456789 identifier0123456789 -->`,
-    output: `asmdom::h(u8"!", std::string(u8" VNodestringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789 "))`,
+    output: `asmdom::h(u8"!", std::string(u8" VNodeChildrenstringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789 "))`,
   },
   {
     message: 'should parse empty comments',
@@ -131,10 +131,10 @@ export default [
     message: 'should support all syntax except {, }, < and > in text child',
     input: `
       <div>
-        VNodestringreturn-/*.-:!= []()\\"'0123456789 identifier0123456789
+        VNodeChildrenstringreturn-/*.-:!= []()\\"'0123456789 identifier0123456789
       </div>
     `,
-    output: `asmdom::h(u8"div", std::string(u8"VNodestringreturn-/*.-:!= []()\\\\"'0123456789 identifier0123456789"))`,
+    output: `asmdom::h(u8"div", std::string(u8"VNodeChildrenstringreturn-/*.-:!= []()\\\\"'0123456789 identifier0123456789"))`,
   },
   {
     message: 'should replace new line and spaces with one space in text child',
@@ -332,15 +332,15 @@ export default [
   },
   {
     message: 'should escape support all syntax in double quote string attribute',
-    input: `<span foo="VNodestringreturn-><>/*.-:!={}
+    input: `<span foo="VNodeChildrenstringreturn-><>/*.-:!={}
         []()\\\\"'0123456789 identifier0123456789" />`,
-    output: `asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"VNodestringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789"}}))`,
+    output: `asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"VNodeChildrenstringreturn-><>/*.-:!={} []()\\\\"'0123456789 identifier0123456789"}}))`,
   },
   {
     message: 'should escape support all syntax in single quote string attribute',
-    input: `<span foo='VNodestringreturn-><>/*.-:!={}
+    input: `<span foo='VNodeChildrenstringreturn-><>/*.-:!={}
         []()\\"\\'0123456789 identifier0123456789' />`,
-    output: `asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"VNodestringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789"}}))`,
+    output: `asmdom::h(u8"span", asmdom::Data (asmdom::Attrs {{u8"foo", u8"VNodeChildrenstringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789"}}))`,
   },
   {
     message: 'should recognize value without square brackets',
@@ -418,6 +418,60 @@ export default [
     output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Callbacks {{u8"onfoo", onFoo}, {u8"onbar", onBar}}))',
   },
   {
+    message: 'should parse children code as child',
+    input: `
+      <div>
+        {:Children foo }
+      </div>
+    `,
+    output: 'asmdom::h(u8"div", foo)',
+  },
+  {
+    message: 'should parse children code as last child',
+    input: `
+      <div>
+        text
+        <span>text</span>
+        {:Children foo }
+      </div>
+    `,
+    output: 'asmdom::h(u8"div", [&]() -> asmdom::Children {asmdom::Children _asmdom_ch_concat_0;asmdom::Children _asmdom_ch_concat_1 = asmdom::Children {asmdom::h(u8"text", true), asmdom::h(u8"span", std::string(u8"text"))};asmdom::Children _asmdom_ch_concat_2 = foo;_asmdom_ch_concat_0.reserve(_asmdom_ch_concat_1.size() + _asmdom_ch_concat_2.size());_asmdom_ch_concat_0.insert(_asmdom_ch_concat_0.end(), _asmdom_ch_concat_1.begin(), _asmdom_ch_concat_1.end());_asmdom_ch_concat_0.insert(_asmdom_ch_concat_0.end(), _asmdom_ch_concat_2.begin(), _asmdom_ch_concat_2.end());return _asmdom_ch_concat_0;}())',
+  },
+  {
+    message: 'should parse children code as first child',
+    input: `
+      <div>
+        {:Children foo }
+        text
+        <span>text</span>
+      </div>
+    `,
+    output: 'asmdom::h(u8"div", [&]() -> asmdom::Children {asmdom::Children _asmdom_ch_concat_3;asmdom::Children _asmdom_ch_concat_4 = foo;asmdom::Children _asmdom_ch_concat_5 = asmdom::Children {asmdom::h(u8"text", true), asmdom::h(u8"span", std::string(u8"text"))};_asmdom_ch_concat_3.reserve(_asmdom_ch_concat_4.size() + _asmdom_ch_concat_5.size());_asmdom_ch_concat_3.insert(_asmdom_ch_concat_3.end(), _asmdom_ch_concat_4.begin(), _asmdom_ch_concat_4.end());_asmdom_ch_concat_3.insert(_asmdom_ch_concat_3.end(), _asmdom_ch_concat_5.begin(), _asmdom_ch_concat_5.end());return _asmdom_ch_concat_3;}())',
+  },
+  {
+    message: 'should parse multiple children code',
+    input: [
+      `
+        <div>
+          {:Children foo }
+          {:Children bar }
+        </div>
+      `,
+      `
+        <div>
+          text
+          {:Children foo }
+          <span />
+          {:Children bar }
+        </div>
+      `
+    ],
+    output: [
+      'asmdom::h(u8"div", [&]() -> asmdom::Children {asmdom::Children _asmdom_ch_concat_6;asmdom::Children _asmdom_ch_concat_7 = foo;asmdom::Children _asmdom_ch_concat_8 = bar;_asmdom_ch_concat_6.reserve(_asmdom_ch_concat_7.size() + _asmdom_ch_concat_8.size());_asmdom_ch_concat_6.insert(_asmdom_ch_concat_6.end(), _asmdom_ch_concat_7.begin(), _asmdom_ch_concat_7.end());_asmdom_ch_concat_6.insert(_asmdom_ch_concat_6.end(), _asmdom_ch_concat_8.begin(), _asmdom_ch_concat_8.end());return _asmdom_ch_concat_6;}())',
+      'asmdom::h(u8"div", [&]() -> asmdom::Children {asmdom::Children _asmdom_ch_concat_9;asmdom::Children _asmdom_ch_concat_10 = asmdom::Children {asmdom::h(u8"text", true)};asmdom::Children _asmdom_ch_concat_11 = foo;asmdom::Children _asmdom_ch_concat_12 = asmdom::Children {asmdom::h(u8"span")};asmdom::Children _asmdom_ch_concat_13 = bar;_asmdom_ch_concat_9.reserve(_asmdom_ch_concat_10.size() + _asmdom_ch_concat_11.size() + _asmdom_ch_concat_12.size() + _asmdom_ch_concat_13.size());_asmdom_ch_concat_9.insert(_asmdom_ch_concat_9.end(), _asmdom_ch_concat_10.begin(), _asmdom_ch_concat_10.end());_asmdom_ch_concat_9.insert(_asmdom_ch_concat_9.end(), _asmdom_ch_concat_11.begin(), _asmdom_ch_concat_11.end());_asmdom_ch_concat_9.insert(_asmdom_ch_concat_9.end(), _asmdom_ch_concat_12.begin(), _asmdom_ch_concat_12.end());_asmdom_ch_concat_9.insert(_asmdom_ch_concat_9.end(), _asmdom_ch_concat_13.begin(), _asmdom_ch_concat_13.end());return _asmdom_ch_concat_9;}())',
+    ],
+  },
+  {
     message: 'should parse CPX code inside C++ code',
     input: `
       // my first program in C++
@@ -478,7 +532,7 @@ export default [
         
         int main()
         {
-          std::string foo = " VNodestringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 '";
+          std::string foo = " VNodeChildrenstringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 '";
           VNode* vnode = <span />;
         }
       `,
@@ -553,7 +607,7 @@ export default [
         
         int main()
         {
-          std::string foo = " VNodestringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 '";
+          std::string foo = " VNodeChildrenstringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 '";
           VNode* vnode = asmdom::h(u8"span");
         }`,
       `#include <iostream>

@@ -107,6 +107,7 @@ CPXElementName
 CPXIdentifier
     : IDENTIFIER
     | "VNode"
+    | "Children"
     | "string"
     | "return"
     | CPXIdentifier "-" CPXIdentifier
@@ -243,6 +244,8 @@ CPXExpression
         { $$ = { type: 'string', value: $5 }; }
     | "{" ":" "VNode" space code space "}"
         { $$ = { type: 'VNode', value: $5.trim() }; }
+    | "{" ":" "Children" space code space "}"
+        { $$ = { type: 'Children', value: $5.trim() }; }
     ;
 
 CPXText
@@ -329,6 +332,7 @@ safeChar
     | "="
     | "\\"
     | "VNode"
+    | "Children"
     | "string"
     | "return"
     | IDENTIFIER
