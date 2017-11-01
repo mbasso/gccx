@@ -1,10 +1,12 @@
 import { composeRegex, stringMatch } from './utils';
 
-let id = -1;
+let childrenId = -1;
+let dataId = -1;
 
 const attributeRegex = /\s*(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\s*(?::|-)\s*[a-zA-Z_])?)+\s*/;
 const parenthesizedAttributeRegex = composeRegex(/\s*(?:\{|\[|\()\s*/, attributeRegex, /\s*(?:\)|\]|\})\s*/);
 const attributeAssignmentRegex = /\s*=\s*(?:{|"|')\s*/;
+const spreadAttributeRegex = /\s*\{\s*\.\.\.\s*/;
 
 const tagCloses = [{
   regex: /\s*>/,
@@ -27,6 +29,9 @@ const tagAttributes = [
       {
         regex: attributeAssignmentRegex,
       },
+      {
+        regex: spreadAttributeRegex,
+      },
     ],
   },
   {
@@ -36,8 +41,15 @@ const tagAttributes = [
       {
         regex: attributeAssignmentRegex,
       },
+      {
+        regex: spreadAttributeRegex,
+      },
     ],
-  }];
+  },
+  {
+    regex: spreadAttributeRegex,
+  },
+];
 
 tagAttributes[2].alternatives = tagAttributes;
 tagAttributes[3].alternatives = tagAttributes;
@@ -66,10 +78,39 @@ const getTagName = sel => (
     : sel
 );
 
+const filterByType = (type, data) =>
+  data
+    .filter(attribute => attribute.type === type)
+    .filter((obj, index, arr) =>
+      arr.map(mapObj => mapObj.name).lastIndexOf(obj.name) === index,
+    );
+
+const filterAttrs = filterByType.bind(null, 'attr');
+const filterProps = filterByType.bind(null, 'prop');
+const filterCallbacks = filterByType.bind(null, 'callback');
+
+const createMaps = maps =>
+  maps.map(map => (
+    map.values.length === 0
+      ? ''
+      : `${map.id} {${
+        map.values
+          .map(attr => `{${attr.name}, ${attr.value}}`)
+          .join(', ')
+      }}`
+  )).filter(map => map !== '')
+    .join(', ');
+
 let createVNode;
 
 const getChildrenDeclaration = children =>
   `asmdom::Children {${children.map(createVNode).join(', ')}}`;
+
+const getDataDeclaration = data => `asmdom::Data (${createMaps([
+  { id: 'asmdom::Attrs', values: filterAttrs(data) },
+  { id: 'asmdom::Props', values: filterProps(data) },
+  { id: 'asmdom::Callbacks', values: filterCallbacks(data) },
+])})`;
 
 const splitArray = (arr, predicate) => {
   const result = [];
@@ -91,29 +132,6 @@ const splitArray = (arr, predicate) => {
   }
   return result;
 };
-
-const filterByType = (type, vnode) =>
-  vnode.data
-    .filter(attribute => attribute.type === type)
-    .filter((obj, index, arr) =>
-      arr.map(mapObj => mapObj.name).lastIndexOf(obj.name) === index,
-    );
-
-const filterAttrs = filterByType.bind(null, 'attr');
-const filterProps = filterByType.bind(null, 'prop');
-const filterCallbacks = filterByType.bind(null, 'callback');
-
-const createMaps = maps =>
-  maps.map(map => (
-    map.values.length === 0
-      ? ''
-      : `${map.id} {${
-        map.values
-          .map(attr => `{${attr.name}, ${attr.value}}`)
-          .join(', ')
-      }}`
-  )).filter(map => map !== '')
-    .join(', ');
 
 const aggregateStrings = (vnodes) => {
   if (vnodes.length === 1) return vnodes[0];
@@ -159,72 +177,95 @@ const aggregateNodes = (vnodes) => {
   return computedVnodes;
 };
 
-createVNode = (data) => {
-  let vnode;
-  if (data.type === 'VNode') return data.value;
-  if (data.type === 'string') return `asmdom::h(${data.value.trim()}, true)`;
-  if (data.type === 'CPXText') return `asmdom::h(u8"${data.value.trim()}", true)`;
-  if (data.type === 'CPXComment') return `asmdom::h(u8"!", std::string(u8"${escapeQuotes(data.value)}"))`;
-  if (data.type === 'CPXElement') {
-    vnode = `asmdom::h(${data.sel}`;
+createVNode = (vnode) => {
+  let compiledVNode;
+  if (vnode.type === 'VNode') return vnode.value;
+  if (vnode.type === 'string') return `asmdom::h(${vnode.value.trim()}, true)`;
+  if (vnode.type === 'CPXText') return `asmdom::h(u8"${vnode.value.trim()}", true)`;
+  if (vnode.type === 'CPXComment') return `asmdom::h(u8"!", std::string(u8"${escapeQuotes(vnode.value)}"))`;
+  if (vnode.type === 'CPXElement') {
+    compiledVNode = `asmdom::h(${vnode.sel}`;
 
-    if (data.data !== undefined && data.data.length !== 0) {
-      vnode += ', asmdom::Data (';
-      vnode += createMaps([
-        { id: 'asmdom::Attrs', values: filterAttrs(data) },
-        { id: 'asmdom::Props', values: filterProps(data) },
-        { id: 'asmdom::Callbacks', values: filterCallbacks(data) },
-      ]);
-      vnode += ')';
-    }
-
-    if (data.children !== undefined) {
-      const children = aggregateNodes(
-        data.children.filter(child => child.type !== 'comment'),
-      );
-
-      if (children.length === 1) {
-        vnode += ', ';
-        if (children[0].type === 'CPXText') {
-          vnode += `std::string(u8"${children[0].value.trim()}")`;
-        } else if (children[0].type === 'string') {
-          vnode += children[0].aggregated !== true
-            ? `std::string(${children[0].value.trim()})`
-            : children[0].value.trim();
-        } else if (children[0].type === 'Children') {
-          vnode += children[0].value;
-        } else {
-          vnode += createVNode(children[0]);
-        }
-      } else if (children.length > 1) {
-        if (children.find(child => child.type === 'Children') !== undefined) {
+    if (vnode.data !== undefined) {
+      if (vnode.data.length === 1 && vnode.data[0].type === 'spread') {
+        compiledVNode += `, ${vnode.data[0].value}`;
+      } else if (vnode.data.length > 0) {
+        if (vnode.data.find(x => x.type === 'spread') !== undefined) {
           // eslint-disable-next-line
-          const resultVar = `_asmdom_ch_concat_${++id}`;
-          const childrenGroups = splitArray(children, x => x.type === 'Children').map(group => ({
+          const resultVar = `_asmdom_data_concat_${++dataId}`;
+          const dataGroups = splitArray(vnode.data, x => x.type === 'spread').map(group => ({
             // eslint-disable-next-line
-            identifier: `_asmdom_ch_concat_${++id}`,
+            identifier: `_asmdom_data_concat_${++dataId}`,
             value: group,
           }));
-          const identifiers = childrenGroups.map(x => x.identifier);
-          vnode += ', [&]() -> asmdom::Children {';
-          vnode += `asmdom::Children ${resultVar};`;
-          vnode += childrenGroups.map(
-            ({ identifier, value }) => `asmdom::Children ${identifier} = ${value.type === 'Children' ? value.value : getChildrenDeclaration(value)};`,
+          const identifiers = dataGroups.map(x => x.identifier).reverse();
+          compiledVNode += ', [&]() -> asmdom::Data {';
+          compiledVNode += `asmdom::Data ${resultVar};`;
+          compiledVNode += dataGroups.map(
+            ({ identifier, value }) => `asmdom::Data ${identifier} = ${value.type === 'spread' ? value.value : getDataDeclaration(value)};`,
           ).join('');
-          vnode += `${resultVar}.reserve(${identifiers.map(x => `${x}.size()`).join(' + ')});`;
-          vnode += identifiers.map(
-            x => `${resultVar}.insert(${resultVar}.end(), ${x}.begin(), ${x}.end());`,
+          compiledVNode += identifiers.map(
+            (x) => {
+              let result = `${resultVar}.attrs.insert(${x}.attrs.begin(), ${x}.attrs.end());`;
+              result += `${resultVar}.props.insert(${x}.props.begin(), ${x}.props.end());`;
+              result += `${resultVar}.callbacks.insert(${x}.callbacks.begin(), ${x}.callbacks.end());`;
+              return result;
+            },
           ).join('');
-          vnode += `return ${resultVar};}()`;
+          compiledVNode += `return ${resultVar};}()`;
         } else {
-          vnode += `, ${getChildrenDeclaration(children)}`;
+          compiledVNode += `, ${getDataDeclaration(vnode.data)}`;
         }
       }
     }
 
-    vnode += ')';
+    if (vnode.children !== undefined) {
+      const children = aggregateNodes(
+        vnode.children.filter(child => child.type !== 'comment'),
+      );
+
+      if (children.length === 1) {
+        compiledVNode += ', ';
+        if (children[0].type === 'CPXText') {
+          compiledVNode += `std::string(u8"${children[0].value.trim()}")`;
+        } else if (children[0].type === 'string') {
+          compiledVNode += children[0].aggregated !== true
+            ? `std::string(${children[0].value.trim()})`
+            : children[0].value.trim();
+        } else if (children[0].type === 'Children') {
+          compiledVNode += children[0].value;
+        } else {
+          compiledVNode += createVNode(children[0]);
+        }
+      } else if (children.length > 1) {
+        if (children.find(child => child.type === 'Children') !== undefined) {
+          // eslint-disable-next-line
+          const resultVar = `_asmdom_ch_concat_${++childrenId}`;
+          const childrenGroups = splitArray(children, x => x.type === 'Children').map(group => ({
+            // eslint-disable-next-line
+            identifier: `_asmdom_ch_concat_${++childrenId}`,
+            value: group,
+          }));
+          const identifiers = childrenGroups.map(x => x.identifier);
+          compiledVNode += ', [&]() -> asmdom::Children {';
+          compiledVNode += `asmdom::Children ${resultVar};`;
+          compiledVNode += childrenGroups.map(
+            ({ identifier, value }) => `asmdom::Children ${identifier} = ${value.type === 'Children' ? value.value : getChildrenDeclaration(value)};`,
+          ).join('');
+          compiledVNode += `${resultVar}.reserve(${identifiers.map(x => `${x}.size()`).join(' + ')});`;
+          compiledVNode += identifiers.map(
+            x => `${resultVar}.insert(${resultVar}.end(), ${x}.begin(), ${x}.end());`,
+          ).join('');
+          compiledVNode += `return ${resultVar};}()`;
+        } else {
+          compiledVNode += `, ${getChildrenDeclaration(children)}`;
+        }
+      }
+    }
+
+    compiledVNode += ')';
   }
-  return vnode;
+  return compiledVNode;
 };
 
 export default {

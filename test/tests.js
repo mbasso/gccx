@@ -525,6 +525,37 @@ export default [
       }}}))`,
   },
   {
+    message: 'should parse only spread operator',
+    input: '<span {...data} />',
+    output: 'asmdom::h(u8"span", data)',
+  },
+  {
+    message: 'should parse spread operator with spaces',
+    input: '<span {  ...   data   } />',
+    output: 'asmdom::h(u8"span", data)',
+  },
+  {
+    message: 'should parse spread operator as last attribute',
+    input: '<span foo bar {...data} />',
+    output: 'asmdom::h(u8"span", [&]() -> asmdom::Data {asmdom::Data _asmdom_data_concat_0;asmdom::Data _asmdom_data_concat_1 = asmdom::Data (asmdom::Attrs {{u8"foo", u8"true"}, {u8"bar", u8"true"}});asmdom::Data _asmdom_data_concat_2 = data;_asmdom_data_concat_0.attrs.insert(_asmdom_data_concat_2.attrs.begin(), _asmdom_data_concat_2.attrs.end());_asmdom_data_concat_0.props.insert(_asmdom_data_concat_2.props.begin(), _asmdom_data_concat_2.props.end());_asmdom_data_concat_0.callbacks.insert(_asmdom_data_concat_2.callbacks.begin(), _asmdom_data_concat_2.callbacks.end());_asmdom_data_concat_0.attrs.insert(_asmdom_data_concat_1.attrs.begin(), _asmdom_data_concat_1.attrs.end());_asmdom_data_concat_0.props.insert(_asmdom_data_concat_1.props.begin(), _asmdom_data_concat_1.props.end());_asmdom_data_concat_0.callbacks.insert(_asmdom_data_concat_1.callbacks.begin(), _asmdom_data_concat_1.callbacks.end());return _asmdom_data_concat_0;}())',
+  },
+  {
+    message: 'should parse spread operator as first attribute',
+    input: '<span {...data} foo bar />',
+    output: 'asmdom::h(u8"span", [&]() -> asmdom::Data {asmdom::Data _asmdom_data_concat_3;asmdom::Data _asmdom_data_concat_4 = data;asmdom::Data _asmdom_data_concat_5 = asmdom::Data (asmdom::Attrs {{u8"foo", u8"true"}, {u8"bar", u8"true"}});_asmdom_data_concat_3.attrs.insert(_asmdom_data_concat_5.attrs.begin(), _asmdom_data_concat_5.attrs.end());_asmdom_data_concat_3.props.insert(_asmdom_data_concat_5.props.begin(), _asmdom_data_concat_5.props.end());_asmdom_data_concat_3.callbacks.insert(_asmdom_data_concat_5.callbacks.begin(), _asmdom_data_concat_5.callbacks.end());_asmdom_data_concat_3.attrs.insert(_asmdom_data_concat_4.attrs.begin(), _asmdom_data_concat_4.attrs.end());_asmdom_data_concat_3.props.insert(_asmdom_data_concat_4.props.begin(), _asmdom_data_concat_4.props.end());_asmdom_data_concat_3.callbacks.insert(_asmdom_data_concat_4.callbacks.begin(), _asmdom_data_concat_4.callbacks.end());return _asmdom_data_concat_3;}())',
+  },
+  {
+    message: 'should parse multiple spread attributes',
+    input: [
+      '<span {...foo} {...bar} />',
+      '<span foo {...foo} bar {...bar} />',
+    ],
+    output: [
+      'asmdom::h(u8"span", [&]() -> asmdom::Data {asmdom::Data _asmdom_data_concat_6;asmdom::Data _asmdom_data_concat_7 = foo;asmdom::Data _asmdom_data_concat_8 = bar;_asmdom_data_concat_6.attrs.insert(_asmdom_data_concat_8.attrs.begin(), _asmdom_data_concat_8.attrs.end());_asmdom_data_concat_6.props.insert(_asmdom_data_concat_8.props.begin(), _asmdom_data_concat_8.props.end());_asmdom_data_concat_6.callbacks.insert(_asmdom_data_concat_8.callbacks.begin(), _asmdom_data_concat_8.callbacks.end());_asmdom_data_concat_6.attrs.insert(_asmdom_data_concat_7.attrs.begin(), _asmdom_data_concat_7.attrs.end());_asmdom_data_concat_6.props.insert(_asmdom_data_concat_7.props.begin(), _asmdom_data_concat_7.props.end());_asmdom_data_concat_6.callbacks.insert(_asmdom_data_concat_7.callbacks.begin(), _asmdom_data_concat_7.callbacks.end());return _asmdom_data_concat_6;}())',
+      'asmdom::h(u8"span", [&]() -> asmdom::Data {asmdom::Data _asmdom_data_concat_9;asmdom::Data _asmdom_data_concat_10 = asmdom::Data (asmdom::Attrs {{u8"foo", u8"true"}});asmdom::Data _asmdom_data_concat_11 = foo;asmdom::Data _asmdom_data_concat_12 = asmdom::Data (asmdom::Attrs {{u8"bar", u8"true"}});asmdom::Data _asmdom_data_concat_13 = bar;_asmdom_data_concat_9.attrs.insert(_asmdom_data_concat_13.attrs.begin(), _asmdom_data_concat_13.attrs.end());_asmdom_data_concat_9.props.insert(_asmdom_data_concat_13.props.begin(), _asmdom_data_concat_13.props.end());_asmdom_data_concat_9.callbacks.insert(_asmdom_data_concat_13.callbacks.begin(), _asmdom_data_concat_13.callbacks.end());_asmdom_data_concat_9.attrs.insert(_asmdom_data_concat_12.attrs.begin(), _asmdom_data_concat_12.attrs.end());_asmdom_data_concat_9.props.insert(_asmdom_data_concat_12.props.begin(), _asmdom_data_concat_12.props.end());_asmdom_data_concat_9.callbacks.insert(_asmdom_data_concat_12.callbacks.begin(), _asmdom_data_concat_12.callbacks.end());_asmdom_data_concat_9.attrs.insert(_asmdom_data_concat_11.attrs.begin(), _asmdom_data_concat_11.attrs.end());_asmdom_data_concat_9.props.insert(_asmdom_data_concat_11.props.begin(), _asmdom_data_concat_11.props.end());_asmdom_data_concat_9.callbacks.insert(_asmdom_data_concat_11.callbacks.begin(), _asmdom_data_concat_11.callbacks.end());_asmdom_data_concat_9.attrs.insert(_asmdom_data_concat_10.attrs.begin(), _asmdom_data_concat_10.attrs.end());_asmdom_data_concat_9.props.insert(_asmdom_data_concat_10.props.begin(), _asmdom_data_concat_10.props.end());_asmdom_data_concat_9.callbacks.insert(_asmdom_data_concat_10.callbacks.begin(), _asmdom_data_concat_10.callbacks.end());return _asmdom_data_concat_9;}())',
+    ],
+  },
+  {
     message: 'should escape C++ code',
     input: [
       `

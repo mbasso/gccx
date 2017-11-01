@@ -140,15 +140,19 @@ CPXComment
 CPXAttributes
     :
         { $$ = []; }
-    // | CPXSpreadAttribute CPXAttributes
     | CPXAttributes space CPXAttribute
         { $$ = $1.concat($3); }
     ;
 
-// CPXSpreadAttribute
-
 CPXAttribute
-    : CPXAttributeIdentifier space CPXAttributeAssignment
+    : "{" space "." "." "." space code "}"
+        %{
+            $$ = {
+                type: 'spread',
+                value: $7.trim(),
+            };
+        %}
+    | CPXAttributeIdentifier space CPXAttributeAssignment
         %{
             var value = $3.value;
             if ($3.type === 'shorthand') {
