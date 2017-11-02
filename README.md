@@ -16,6 +16,10 @@
 
 ![Preview](preview.jpeg)
 
+## Motivation
+
+[asm-dom](https://github.com/mbasso/asm-dom) Virtual DOM is a little bit verbose to write, we need a lot, not to much readable, lines of code to create a view. In addition we have to convert some types, merge attributes, props and do other stuff like that every time. For this reason we have decided to create `gccx`, a parser that allows us to write a new simple syntax. We will call this syntax `CPX`, it is based on [JSX](https://facebook.github.io/jsx/) but it has some differences. Basically `gccx` will transform this syntax into standard C++. In this way we can write files that appear very similar to HTML and can be written and read easily.
+
 ## Installation
 
 You can install gccx using [npm](https://www.npmjs.com/package/gccx):
