@@ -106,9 +106,6 @@ CPXElementName
 
 CPXIdentifier
     : IDENTIFIER
-    | "VNode"
-    | "Children"
-    | "string"
     | "return"
     | CPXIdentifier "-" CPXIdentifier
         { $$ = $1 + $2 + $3; }
@@ -244,12 +241,10 @@ CPXExpression
         { $$ = { type: 'comment' }; }
     | "{" space code space "}"
         { $$ = { type: 'VNode', value: $3.trim() }; }
-    | "{" ":" "string" space code space "}"
-        { $$ = { type: 'string', value: $5 }; }
-    | "{" ":" "VNode" space code space "}"
-        { $$ = { type: 'VNode', value: $5.trim() }; }
-    | "{" ":" "Children" space code space "}"
-        { $$ = { type: 'Children', value: $5.trim() }; }
+    | "{" space "{" space code space "}" space "}"
+        { $$ = { type: 'string', value: $5.trim() }; }
+    | "{" space "." "." "." space code space "}"
+        { $$ = { type: 'Children', value: $7.trim() }; }
     ;
 
 CPXText
@@ -335,9 +330,6 @@ safeChar
     | ")"
     | "="
     | "\\"
-    | "VNode"
-    | "Children"
-    | "string"
     | "return"
     | IDENTIFIER
     | ANY

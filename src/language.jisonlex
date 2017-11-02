@@ -2,10 +2,7 @@
 
 \s+																		return 'WHITESPACE'
 
-"VNode"																return 'VNode'
-"Children"														return 'Children'
-"string"															return 'string'
-"return"															return 'return'
+"return"															    return 'return'
 
 "->"																	return '->'
 
