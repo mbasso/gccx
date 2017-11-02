@@ -14,7 +14,7 @@ As we said before `gccx` compiles `CPX` into standard C++. This means that `gccx
 
 ## Differences from JSX
 
-`CPX` is based on [JSX](https://facebook.github.io/jsx/), so they are very similar, otherwise there are some important differences. This is mainly because C++ is a weakly typed language while Javascript is a dynamically typed language.
+`CPX` is based on [JSX](https://facebook.github.io/jsx/), so they are very similar, however there are some important differences. This is mainly because C++ is a weakly typed language while Javascript is a dynamically typed language.
 For this reason you have to pay attention to a set of syntactic rules, for example, you have to write children in different ways, as shown here:
 
 ```
@@ -23,9 +23,9 @@ For this reason you have to pay attention to a set of syntactic rules, for examp
 // getVNode: () => VNode
 // children: Array<VNode>
 <div>
-	Hello { name } !
-	{ getVNode() }
-	{ children }
+  Hello { name } !
+  { getVNode() }
+  { children }
 </div>
 
 // In CPX
@@ -33,9 +33,9 @@ For this reason you have to pay attention to a set of syntactic rules, for examp
 // getVNode: asmdom::VNode (*getVNode)()
 // children: asmdom::Children
 <div>
-	Hello {{ name }} !
-	{ getVNode() }
-	{ ...children }
+  Hello {{ name }} !
+  { getVNode() }
+  { ...children }
 </div>
 ```
 
