@@ -1,0 +1,10 @@
+{
+  "name": "gccx-cli-example",
+  "version": "0.1.0",
+  "description": "gccx cli example",
+  "scripts": {
+    "start": "gccx src"
+  },
+  "author": "Matteo Basso (https://github.com/mbasso)",
+  "license": "MIT"
+}

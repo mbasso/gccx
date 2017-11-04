@@ -1,0 +1,6 @@
+{
+  "output": "compiled",
+  "extensions": [".cpp"],
+  "copyFiles": true,
+  "watch": false
+}
