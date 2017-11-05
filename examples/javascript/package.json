@@ -1,0 +1,10 @@
+{
+  "name": "gccx-javascript-example",
+  "version": "0.1.0",
+  "description": "gccx javascript example",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Matteo Basso (https://github.com/mbasso)",
+  "license": "MIT"
+}
