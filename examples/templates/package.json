@@ -1,0 +1,13 @@
+{
+  "name": "gccx-templates-example",
+  "version": "0.1.0",
+  "description": "gccx templates example",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Matteo Basso (https://github.com/mbasso)",
+  "license": "MIT",
+  "devDependencies": {
+    "gccx": "0.0.4"
+  }
+}
