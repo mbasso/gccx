@@ -6,5 +6,8 @@
     "start": "gccx src"
   },
   "author": "Matteo Basso (https://github.com/mbasso)",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "gccx": "0.0.4"
+  }
 }
