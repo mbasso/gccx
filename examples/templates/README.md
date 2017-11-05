@@ -8,7 +8,7 @@ Download this example [or clone the repo](https://github.com/mbasso/gccx).
 After that install the dependencies and run the start command:
 
 ```bash
-cd examples/cli
+cd examples/templates
 npm install
 npm start
 ```
