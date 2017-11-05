@@ -562,6 +562,15 @@ export default [
         
         int main()
         {
+          std::string foo = "<span />";
+          VNode* vnode = <span />;
+        }
+      `,
+      `
+        #include <iostream>
+        
+        int main()
+        {
           std::string foo = " VNodeChildrenstringreturn-><>/*.-:!={} []()\\"'0123456789 identifier0123456789 '";
           VNode* vnode = <span />;
         }
@@ -633,6 +642,13 @@ export default [
       `,
     ],
     output: [
+      `#include <iostream>
+        
+        int main()
+        {
+          std::string foo = "<span />";
+          VNode* vnode = asmdom::h(u8"span");
+        }`,
       `#include <iostream>
         
         int main()
