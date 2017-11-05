@@ -76,6 +76,10 @@ const compiled = gccx.parse(code); // compiled code as string
 
 Visit [docs](https://github.com/mbasso/gccx/blob/master/docs) folder to find the complete doc of gccx.
 
+## Examples
+
+Examples are available in the [examples folder](https://github.com/mbasso/gccx/blob/master/examples). You will find examples of both, cli and javascript api usage.
+
 ## Change Log
 
 This project adheres to [Semantic Versioning](http://semver.org/).  

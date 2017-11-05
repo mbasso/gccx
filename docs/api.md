@@ -3,6 +3,7 @@
 - [Motivation](#motivation)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Examples](#examples)
 
 ## Motivation
 
@@ -42,3 +43,7 @@ console.log(compiled);
 // write a file with the code
 fs.writeFileSync('compiledFile.cpp', compiled);
 ```
+
+## Examples
+
+You can find a very simple example [here](https://github.com/mbasso/gccx/tree/master/examples/javascript) or another one, a little bit more complicated [here](https://github.com/mbasso/gccx/tree/master/examples/templates).

@@ -8,6 +8,7 @@ gccx can be used to compile files and directories from the command line
 - [Usage](#usage)
 - [Options](#options)
 - [gccxrc](#gccxrc)
+- [Examples](#examples)
 
 ## Installation
 
@@ -84,3 +85,7 @@ Instead of cli options, you can use a `.gccxrc` json file, here is an example:
 ```
 
 gccx will lookup to a `.gccxrc` in the directory of the file being compiled. If one does not exist, it will travel up the directory tree trying to find it.
+
+## Examples
+
+You can find an example of cli usage [here](https://github.com/mbasso/gccx/tree/master/examples/cli).
