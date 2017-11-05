@@ -1,4 +1,4 @@
-# Javascript api
+# Templates
 
 Primitive example that shows the powerful of `gccx` javascript api. In this example we define a C++ file and a template file that cointains only `CPX`. Our script will combine them in the right way.
 
