@@ -4,7 +4,6 @@
 	- [CPX represents objects](#cpx-represents-objects)
 	- [Scope](#scope)
 - [Elements](#elements)
-	- [Element type at runtime](#element-type-at-runtime)
 - [Tag attributes](#tag-attributes)
 	- [Attributes](#attributes)
 	- [Props](#props)
@@ -25,19 +24,19 @@
 As we said in the previous section, `gccx` compiles `CPX` into standard C++. This means that `gccx` will compile everything that respects `CPX` syntax, it will not check the validity of your program, it will not warn you about undefined variables, wrong types and so on. You will catch these errors only when you decide to compile your C++ code using [emcc](http://kripken.github.io/emscripten-site/).
 Using `gccx` you can compile files that embed some `CPX` code, but also file that contains only `CPX` code, for example you can parse this:
 
-```
+```js
 #include "../path-to-asm-dom/asm-dom.hpp"
 #include <string>
 #include <emscripten/val.h>
 
 int main() {
-	asmdom::VNode* image = <img src="hello.png" />;
+  asmdom::VNode* image = <img src="hello.png" />;
 }
 ```
 
 or only this:
 
-```
+```js
 <img src="hello.png" />
 ```
 
@@ -47,16 +46,17 @@ Please read carefully this document to understand the syntactic differences from
 
 `CPX` code compiles into calls to `asmdom::h`, this means that a `CPX` expression always returns an `asmdom::VNode*`, for this reason, you can do:
 
-```
+```js
 asmdom::VNode* image = <img src="hello.png" />;
+
 // is equal to
 /*
 asmdom::VNode* image = asmdom::h(u8"img",
-	asmdom::Data (
-		asmdom::Attrs {
-			{u8"src", u8"hello.png"}
-		}
-	)
+  asmdom::Data (
+    asmdom::Attrs {
+      {u8"src", u8"hello.png"}
+    }
+  )
 );
 */
 ```
@@ -75,15 +75,13 @@ Since `CPX` compiles into calls to `asmdom::h`, the `asm-dom.h` must always be o
 
 ## Elements
 
-To create a VNode, you can simply write a tag as you do in xml:
+To create a VNode, you can simply write a tag as you do in XML:
 
 ```js
 <img src="hello.png" />
 ```
 
-### Element type at runtime
-
-If you want to dynamically choose a tag of an element, you can use `->` and `.` operators:
+If you want to dynamically choose a tag of an element, you can use `->` and `.` operators on your vars:
 
 ```
 <foo.bar->baz src="hello.png" />
@@ -91,7 +89,7 @@ If you want to dynamically choose a tag of an element, you can use `->` and `.` 
 
 ## Tag attributes
 
-Attributes (attributes, props, and callbacks) can be set as string literals with double quotes just like in xml:
+Attributes (attributes, props, and callbacks) can be set as string literals with double quotes just like in XML:
 
 ```js
 <img src="hello.png" />
@@ -250,7 +248,7 @@ otherwise, it can contains children:
 <div>
   <h1>Hello World!</h1>
   <img src="hello.png" />
-  I'm a text
+  This is a text
 </div>
 ```
 
