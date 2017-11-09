@@ -7,13 +7,6 @@
 
 > Transforms CPX (JSX like syntax) into asm-dom Virtual DOM
 
----
-
-**Attention - This project is still in its very early stages and isn't completed yet.**
----
-
----
-
 ![Preview](preview.jpeg)
 
 ## Motivation
