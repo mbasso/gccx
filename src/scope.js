@@ -78,16 +78,24 @@ const getTagName = sel => (
     : sel
 );
 
-const filterByType = (type, data) =>
+const identity = x => x;
+
+const filterByType = (type, formatter, data) =>
   data
     .filter(attribute => attribute.type === type)
     .filter((obj, index, arr) =>
       arr.map(mapObj => mapObj.name).lastIndexOf(obj.name) === index,
-    );
+    )
+    .map(attribute => ({
+      ...attribute,
+      value: formatter(attribute.value),
+    }));
 
-const filterAttrs = filterByType.bind(null, 'attr');
-const filterProps = filterByType.bind(null, 'prop');
-const filterCallbacks = filterByType.bind(null, 'callback');
+const filterAttrs = filterByType.bind(null, 'attr', identity);
+const filterProps = filterByType.bind(null, 'prop', value => (
+  value.indexOf('emscripten::val') !== 0 ? `emscripten::val(${value})` : value
+));
+const filterCallbacks = filterByType.bind(null, 'callback', identity);
 
 const createMaps = maps =>
   maps.map(map => (

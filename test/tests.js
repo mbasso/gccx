@@ -295,6 +295,12 @@ export default [
       'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"foo", emscripten::val(std::wstring(L"bar"))}}))',
   },
   {
+    message: 'should pass props values to emscripten::val constructor',
+    input: '<span [foo] [foo]="bar" [bar]={"baz"} />',
+    output:
+      'asmdom::h(u8"span", asmdom::Data (asmdom::Props {{u8"foo", emscripten::val(std::wstring(L"bar"))}, {u8"bar", emscripten::val("baz")}}))',
+  },
+  {
     message: 'should throw if a string callback is provided',
     input: ['<span onFoo="bar" />', '<span (onFoo)="bar" />'],
     errors: [
