@@ -19,6 +19,6 @@ int main() {
 			_asmdom_data_concat_0.callbacks.insert(_asmdom_data_concat_1.callbacks.begin(), _asmdom_data_concat_1.callbacks.end());
 			return _asmdom_data_concat_0;
 		}()
-	)
+	);
 	delete vnode;
 }
