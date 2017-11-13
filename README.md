@@ -73,6 +73,8 @@ Visit [docs](https://github.com/mbasso/gccx/blob/master/docs) folder to find the
 
 Examples are available in the [examples folder](https://github.com/mbasso/gccx/blob/master/examples). You will find examples of both, cli and javascript api usage.
 
+If you want to see a complete example that uses gccx, you can check out [here](https://github.com/mbasso/asm-dom/tree/master/examples/todomvc%20-%20cpx) the TODOMVC.
+
 ## Change Log
 
 This project adheres to [Semantic Versioning](http://semver.org/).  
