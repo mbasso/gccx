@@ -17,6 +17,7 @@
 		- [Children](#children)
 	- [NULL children](#null-children)
 - [Comments](#comments)
+- [Fragments](#fragments)
 
 
 ## Introduction
@@ -128,17 +129,19 @@ Attributes corresponds to [`asmdom::Attrs`](https://github.com/mbasso/asm-dom/bl
 ```
 
 However there are some special identifiers that are automatically interpreted as props like `value` or `checked`. This is particularly convenient to avoid a code like `<input [value]={variable} />` every time.
-In addition, every attribute that starts with `on` is automatically interpreted as callbacks and rendered lowercase, for example:
+In addition, `ref` and every attribute that starts with `on` is automatically interpreted as callbacks and rendered lowercase, for example:
 
 ```
 <button onClick={callback} />
+<button ref={callback} />
 
 // is equal to
 
 <button (onclick)={callback}>
+<button (ref)={callback}>
 ```
 
-If you want to declare an attribute that stars with `on`, `value` or `checked`, so, you want to ignore these rules, you can surround it with curly brackets:
+If you want to declare an attribute that stars with `on`, `ref`, `value` or `checked`, so, you want to ignore these rules, you can surround it with curly brackets:
 
 ```
 <button onClick={callback} /> // this is an "onclick" callback
@@ -337,4 +340,36 @@ If you want to render a comment into the DOM, you can do something like:
   <!-- I'll be rendered! -->
   Hello World!
 </div>
+```
+
+## Fragments
+
+[DocumentFragments](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment) can be written using a special selector `Fragment`:
+
+```js
+<Fragment>
+	<div>Div content</div>
+  Hello World!
+</Fragment>
+```
+
+In this way you can group a list of children without adding extra nodes to the DOM.
+
+```js
+
+// this cannot be done
+/* asmdom::VNode* vnode = (
+	<div>Child 1</div>
+	<div>Child 2</div>
+	<div>Child 3</div>
+); */
+
+// this is a valid alternative to the code above
+asmdom::VNode* vnode = (
+	<Fragment>
+		<div>Child 1</div>
+		<div>Child 2</div>
+		<div>Child 3</div>
+	</Fragment>
+);
 ```
