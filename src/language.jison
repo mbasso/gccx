@@ -98,7 +98,7 @@ CPXClosingElement
 
 CPXElementName
     : CPXIdentifier
-        { $$ = 'u8"' + $1 + '"'; }
+        { $$ = 'u8"' + ($1 === 'Fragment' ? '' : $1) + '"'; }
     | CPXNamespacedName
         { $$ = 'u8"' + $1 + '"'; }
     | CPXMemberExpression
@@ -183,7 +183,7 @@ CPXAttributeIdentifier
         %{
             var name = $1;
             var type = 'attr';
-            if (name.indexOf('on') === 0) {
+            if (name.indexOf('on') === 0 || name === 'ref') {
                 name = name.toLowerCase();
                 type = 'callback';
             } else if (name === 'value' || name === 'checked') {
