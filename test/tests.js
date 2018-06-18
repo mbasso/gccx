@@ -64,6 +64,23 @@ export default [
     output: 'asmdom::h(u8"!", std::string(u8"  "))',
   },
   {
+    message: 'should parse fragments',
+    input: '<Fragment>   </Fragment>',
+    output: 'asmdom::h(u8"")',
+  },
+  {
+    message: 'should parse fragments with children',
+    input: `
+      < Fragment > 
+        { /* comment here */ }
+        { function(foo, bar) }
+        Hello world!
+        <input /> 
+      < / Fragment >
+    `,
+    output: 'asmdom::h(u8"", asmdom::Children {function(foo, bar), asmdom::h(u8"Hello world!", true), asmdom::h(u8"input")})',
+  },
+  {
     message: 'should support all syntax in comments',
     input:
       '<!-- VNodeChildrenstringreturn-><>/*.-:!={} []()\\"\'0123456789 identifier0123456789 -->',
@@ -348,6 +365,11 @@ export default [
     message: 'should recognize callbacks without round brackets',
     input: '<span onClick={onClick} />',
     output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Callbacks {{u8"onclick", onClick}}))',
+  },
+  {
+    message: 'should recognize ref without round brackets',
+    input: '<span ref={refCallback} />',
+    output: 'asmdom::h(u8"span", asmdom::Data (asmdom::Callbacks {{u8"ref", refCallback}}))',
   },
   {
     message: 'should parse attributes with spaces',
@@ -646,6 +668,19 @@ export default [
           VNode* vnode = <span />;
         }
       `,
+      `
+        template<class T1> struct bar
+        {
+          void doStuff() { std::cout << ""; }
+        };
+
+        template<>
+        struct bar<int>
+        {
+        void doStuff() { std::cout << ""; }
+        };
+      `,
+      'friend bool operator==<>(ValueIter<Type> const &rhs, ValueIter<Type> const &lhs);',
     ],
     output: [
       `#include <iostream>
@@ -719,6 +754,17 @@ export default [
           }
           VNode* vnode = asmdom::h(u8"span");
         }`,
+      `template<class T1> struct bar
+        {
+          void doStuff() { std::cout << ""; }
+        };
+
+        template<>
+        struct bar<int>
+        {
+        void doStuff() { std::cout << ""; }
+        };`,
+        'friend bool operator==<>(ValueIter<Type> const &rhs, ValueIter<Type> const &lhs);',
     ],
   },
 ];
